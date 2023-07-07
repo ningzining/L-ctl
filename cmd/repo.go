@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -44,7 +46,7 @@ func generate(dir string, tableName string) {
 	m["TableName"] = tableName
 	if err != nil {
 		if os.IsNotExist(err) {
-			createFile(dir, fileName, m, "template/repo.tpl")
+			createFile(dir, fileName, m, "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl")
 			return
 		}
 		fmt.Printf("%s\n", err)
@@ -69,14 +71,25 @@ func createFile(path string, fileName string, data interface{}, templateFile str
 		return
 	}
 
+	resp, err := http.Get(templateFile)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+	defer resp.Body.Close()
+	templateData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("%s\n", err)
+		return
+	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return
 	}
 	defer file.Close()
-
-	files, err := template.ParseFiles(templateFile)
+	files, err := template.New("temp.tpl").Parse(string(templateData))
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return
