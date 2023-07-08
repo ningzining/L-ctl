@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
-	"io"
-	"net/http"
+	"github.com/ningzining/L-ctl/logic/util/caseutil"
+	"github.com/ningzining/L-ctl/logic/util/httputil"
+	"github.com/ningzining/L-ctl/logic/util/pathutil"
 	"net/url"
 	"os"
-	"strings"
 	"text/template"
 
 	"github.com/spf13/cobra"
@@ -38,47 +39,39 @@ func init() {
 	}
 }
 
-func generate(dir string, tableName string) error {
-	fileName := fmt.Sprintf("%s.go", toCamelCase(tableName, false))
-	result, err := url.JoinPath(dir, fileName)
+func generate(dirPath string, tableName string) error {
+	fileName := fmt.Sprintf("%s.go", caseutil.ToCamelCase(tableName, false))
+	filePath, err := url.JoinPath(dirPath, fileName)
 	if err != nil {
 		return err
 	}
-	_, err = os.Stat(result)
-	m := make(map[string]interface{})
-	m["Name"] = toCamelCase(tableName, true)
-	m["TableName"] = tableName
+	// 判断目标文件是否已经存在
+	exist, err := pathutil.Exist(filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			createFile(dir, fileName, m, "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl")
-			return err
-		}
-		fmt.Printf("%s\n", err)
+		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
 	}
-	fmt.Printf("目标文件已存在，创建失败: %s\n", result)
+	if exist {
+		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
+	}
+	// 创建文件夹
+	err = pathutil.Mkdir(dir)
+	if err != nil {
+		return err
+	}
+	// 新建文件
+	m := make(map[string]interface{})
+	m["Name"] = caseutil.ToCamelCase(tableName, true)
+	m["TableName"] = tableName
+	err = createFile(filePath, m, "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-const (
-	UnderLine = '_'
-)
-
-func createFile(path string, fileName string, data interface{}, templateFile string) error {
-	filePath, err := url.JoinPath(path, fileName)
-	if err != nil {
-		return err
-	}
-	err = os.MkdirAll(path, 0777)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.Get(templateFile)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	templateData, err := io.ReadAll(resp.Body)
+func createFile(filePath string, data interface{}, templateUrl string) error {
+	// 获取数据
+	templateData, err := httputil.Get(templateUrl)
 	if err != nil {
 		return err
 	}
@@ -88,33 +81,15 @@ func createFile(path string, fileName string, data interface{}, templateFile str
 		return err
 	}
 	defer file.Close()
+	// 解析tpl模板文件
 	files, err := template.New("temp.tpl").Parse(string(templateData))
 	if err != nil {
 		return err
 	}
+	// 渲染数据到模板
 	err = files.Execute(file, data)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func toCamelCase(source string, isTitleCase bool) string {
-	if len(source) == 0 {
-		return source
-	}
-	var sb strings.Builder
-	upper := isTitleCase
-	for _, s := range source {
-		if s == UnderLine {
-			upper = true
-		} else if upper {
-			toUpper := strings.ToUpper(string(s))
-			sb.WriteString(toUpper)
-			upper = false
-		} else {
-			sb.WriteRune(s)
-		}
-	}
-	return sb.String()
 }

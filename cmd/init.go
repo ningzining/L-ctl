@@ -26,6 +26,7 @@ func init() {
 const templateUrl = "https://github.com/ningzining/L-ctl-template.git"
 
 func initTemplate() error {
+	// 获取模板文件所存在的目录
 	templateDir, err := templateutil.GenerateTemplateDir()
 	if err != nil {
 		return err
@@ -35,11 +36,13 @@ func initTemplate() error {
 		return err
 	}
 	if !exist {
+		// 不存在目录则创建目标目录
 		err := pathutil.Mkdir(templateDir)
 		if err != nil {
 			return err
 		}
 	}
+	// 判断模板文件是否被初始化过
 	localDir, err := url.JoinPath(templateDir, ".git")
 	if err != nil {
 		return err
