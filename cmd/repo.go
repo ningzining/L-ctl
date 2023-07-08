@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -22,8 +19,8 @@ var table string
 var repoCmd = &cobra.Command{
 	Use:   "repo",
 	Short: "生成仓储层的repo文件",
-	Run: func(cmd *cobra.Command, args []string) {
-		generate(dir, table)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return generate(dir, table)
 	},
 }
 
@@ -31,14 +28,21 @@ func init() {
 	rootCmd.AddCommand(repoCmd)
 	repoCmd.Flags().StringVarP(&dir, "dir", "d", "", "指定文件生成的目录")
 	repoCmd.Flags().StringVarP(&table, "table", "t", "", "指定数据库的表名(文件名)")
+	err := repoCmd.MarkFlagRequired("dir")
+	if err != nil {
+		return
+	}
+	err = repoCmd.MarkFlagRequired("table")
+	if err != nil {
+		return
+	}
 }
 
-func generate(dir string, tableName string) {
+func generate(dir string, tableName string) error {
 	fileName := fmt.Sprintf("%s.go", toCamelCase(tableName, false))
 	result, err := url.JoinPath(dir, fileName)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 	_, err = os.Stat(result)
 	m := make(map[string]interface{})
@@ -47,59 +51,52 @@ func generate(dir string, tableName string) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			createFile(dir, fileName, m, "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl")
-			return
+			return err
 		}
 		fmt.Printf("%s\n", err)
 	}
 	fmt.Printf("目标文件已存在，创建失败: %s\n", result)
-	return
+	return nil
 }
 
 const (
 	UnderLine = '_'
 )
 
-func createFile(path string, fileName string, data interface{}, templateFile string) {
+func createFile(path string, fileName string, data interface{}, templateFile string) error {
 	filePath, err := url.JoinPath(path, fileName)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 	err = os.MkdirAll(path, 0777)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 
 	resp, err := http.Get(templateFile)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 	defer resp.Body.Close()
 	templateData, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 
 	file, err := os.Create(filePath)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 	defer file.Close()
 	files, err := template.New("temp.tpl").Parse(string(templateData))
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
 	err = files.Execute(file, data)
 	if err != nil {
-		fmt.Printf("%s\n", err)
-		return
+		return err
 	}
-	return
+	return nil
 }
 
 func toCamelCase(source string, isTitleCase bool) string {
