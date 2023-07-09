@@ -44,7 +44,7 @@ func (r *Repo) Generate(dirPath string, tableName string) error {
 	if err = createFile(filePath, m); err != nil {
 		return err
 	}
-	color.Green("file is generated success at: %s", filePath)
+	color.Green("文件生成成功: %s", filePath)
 	return nil
 }
 

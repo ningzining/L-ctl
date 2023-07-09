@@ -49,7 +49,7 @@ func (t *Template) Init() error {
 		return errors.New(fmt.Sprintf("模板初始化失败: %s", err.Error()))
 	}
 	fmt.Printf("%s\n", string(output))
-	color.Green("templates are generated at : %s\n", templateDir)
+	color.Green("模板库初始化成功: %s\n", templateDir)
 	return nil
 }
 
