@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ningzining/L-ctl/logic/util/caseutil"
+	"github.com/ningzining/L-ctl/util/caseutil"
 	"net/url"
 	"testing"
 )
