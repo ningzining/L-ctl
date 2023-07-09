@@ -17,6 +17,7 @@ func NewRepo() *Repo {
 	return &Repo{}
 }
 
+// Generate 生成repo文件
 func (r *Repo) Generate(dirPath string, tableName string) error {
 	fileName := fmt.Sprintf("%s.go", caseutil.ToCamelCase(tableName, false))
 	filePath, err := url.JoinPath(dirPath, fileName)

@@ -16,6 +16,7 @@ func NewTemplate() *Template {
 	return &Template{}
 }
 
+// Init 初始化模板文件
 func (t *Template) Init() error {
 	// 获取模板文件所存在的目录
 	templateDir, err := templateutil.GenerateTemplateDir()
@@ -52,6 +53,7 @@ func (t *Template) Init() error {
 	return nil
 }
 
+// Update 更新模板文件
 func (t *Template) Update() error {
 	templateDir, err := templateutil.GenerateTemplateDir()
 	if err != nil {
