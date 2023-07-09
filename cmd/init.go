@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/logic/util/pathutil"
 	"github.com/ningzining/L-ctl/logic/util/templateutil"
 	"github.com/spf13/cobra"
@@ -22,8 +23,6 @@ var initCmd = &cobra.Command{
 func init() {
 	templateCmd.AddCommand(initCmd)
 }
-
-const templateUrl = "https://github.com/ningzining/L-ctl-template.git"
 
 func initTemplate() error {
 	// 获取模板文件所存在的目录
@@ -51,12 +50,12 @@ func initTemplate() error {
 		return errors.New(fmt.Sprintf("目标文件夹不为空,模板初始化失败,请检查目标文件夹: %s\n", templateDir))
 	}
 
-	command := exec.Command("git", "clone", templateUrl, templateDir)
+	command := exec.Command("git", "clone", templateutil.TemplateGitUrl, templateDir)
 	output, err := command.Output()
 	if err != nil {
 		return errors.New(fmt.Sprintf("模板初始化失败: %s", err.Error()))
 	}
 	fmt.Printf("%s\n", string(output))
-	fmt.Printf("templates are generated in : %s\n", templateDir)
+	color.Green("templates are generated at : %s\n", templateDir)
 	return nil
 }
