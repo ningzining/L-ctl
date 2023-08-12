@@ -1,42 +1,34 @@
 package templateutil
 
 import (
-	"errors"
-	"fmt"
 	"github.com/ningzining/L-ctl/logic/version"
 	"net/url"
 	"os"
-	"runtime"
 	"text/template"
 )
 
 const (
-	TemplateGitUrl  = "https://github.com/ningzining/L-ctl-template.git"
-	TemplateRepoUrl = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
-	LocalRepoUrl    = "repo/repo.tpl"
+	TemplateGitUrl     = "https://github.com/ningzining/L-ctl-template.git"
+	TemplateRepoUrl    = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
+	LocalRepoUrl       = "repo/repo.tpl"
+	DefaultTemplateDir = ".L-ctl"
 )
 
 // GenerateTemplateDir 生成默认模板文件的路径
 func GenerateTemplateDir() (string, error) {
-	var dirPrefix string
-	tempDir := ".L-ctl"
-	switch runtime.GOOS {
-	case "windows":
-		dirPrefix = "C:/Users/Admin"
-	case "darwin":
-		dirPrefix = "~/"
-	default:
-		return "", errors.New(fmt.Sprintf("目前系统不支持该操作系统: %s\n", runtime.GOOS))
+	dirPrefix, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
 	}
-	resultDir, err := url.JoinPath(dirPrefix, tempDir, version.BuildVersion)
+	resultDir, err := url.JoinPath(dirPrefix, DefaultTemplateDir, version.BuildVersion)
 	if err != nil {
 		return "", err
 	}
 	return resultDir, nil
 }
 
-// GetLocalRepoTemplate 获取本地repo.tpl模板文件的路径
-func GetLocalRepoTemplate() (string, error) {
+// GetRepoTemplatePath 获取本地repo.tpl模板文件的路径
+func GetRepoTemplatePath() (string, error) {
 	dir, err := GenerateTemplateDir()
 	if err != nil {
 		return "", err

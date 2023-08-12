@@ -7,19 +7,21 @@ import (
 
 var dir string
 var table string
+var style string
 
 var repoCmd = &cobra.Command{
 	Use:   "repo",
 	Short: "生成仓储层的repo文件",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return logic.NewRepo().Generate(dir, table)
+		return logic.NewRepo().Generate(dir, table, style)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(repoCmd)
 	repoCmd.Flags().StringVarP(&dir, "dir", "d", "", "指定文件生成的目录")
-	repoCmd.Flags().StringVarP(&table, "table", "t", "", "指定数据库的表名(文件名)")
+	repoCmd.Flags().StringVarP(&table, "table", "t", "", "指定数据库的表名")
+	repoCmd.Flags().StringVarP(&style, "style", "s", "", "指定生成的文件格式")
 	if err := repoCmd.MarkFlagRequired("dir"); err != nil {
 		return
 	}

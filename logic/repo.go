@@ -9,6 +9,7 @@ import (
 	"github.com/ningzining/L-ctl/util/pathutil"
 	"github.com/ningzining/L-ctl/util/templateutil"
 	"net/url"
+	"path/filepath"
 )
 
 type Repo struct{}
@@ -17,14 +18,19 @@ func NewRepo() *Repo {
 	return &Repo{}
 }
 
+const (
+	CamelCase     = "lCtl"  // 驼峰命名
+	UnderLineCase = "l_ctl" // 下划线命名
+)
+
 // Generate 生成repo文件
-func (r *Repo) Generate(dirPath string, tableName string) error {
-	fileName := fmt.Sprintf("%s.go", caseutil.ToCamelCase(tableName, false))
-	filePath, err := url.JoinPath(dirPath, fileName)
+func (r *Repo) Generate(dirPath, tableName, style string) error {
+	// 获取生成文件的路径
+	filePath, err := generateFilePath(dirPath, tableName, style)
 	if err != nil {
 		return err
 	}
-	// 判断目标文件是否已经存在
+	// 判断目标文件是否存在
 	exist, err := pathutil.Exist(filePath)
 	if err != nil {
 		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
@@ -36,7 +42,6 @@ func (r *Repo) Generate(dirPath string, tableName string) error {
 	if err = pathutil.Mkdir(dirPath); err != nil {
 		return err
 	}
-
 	// 新建文件
 	m := make(map[string]interface{})
 	m["Name"] = caseutil.ToCamelCase(tableName, true)
@@ -46,6 +51,28 @@ func (r *Repo) Generate(dirPath string, tableName string) error {
 	}
 	color.Green("文件生成成功: %s", filePath)
 	return nil
+}
+
+// 获取生成目标文件的路径
+func generateFilePath(dirPath, tableName, style string) (string, error) {
+	var fileName string
+	switch style {
+	case UnderLineCase:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(tableName))
+	case CamelCase:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToCamelCase(tableName, false))
+	default:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(tableName))
+	}
+	filePath, err := url.JoinPath(dirPath, fileName)
+	if err != nil {
+		return "", err
+	}
+	abs, err := filepath.Abs(filePath)
+	if err != nil {
+		return "", nil
+	}
+	return abs, nil
 }
 
 // 创建文件
@@ -71,7 +98,7 @@ func createFile(filePath string, data interface{}) error {
 
 // 判断是否进行了初始化
 func isInit() (bool, error) {
-	repoTemplate, err := templateutil.GetLocalRepoTemplate()
+	repoTemplate, err := templateutil.GetRepoTemplatePath()
 	if err != nil {
 		return false, err
 	}
@@ -102,7 +129,7 @@ func saveByOriginTemplate(savePath string, data interface{}) error {
 // 通过本地文件创建模板
 func saveByLocalTemplate(savePath string, data interface{}) error {
 	// 获取本地模板文件的路径
-	repoTemplatePath, err := templateutil.GetLocalRepoTemplate()
+	repoTemplatePath, err := templateutil.GetRepoTemplatePath()
 	if err != nil {
 		return err
 	}
