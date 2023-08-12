@@ -1,7 +1,6 @@
 package templateutil
 
 import (
-	"github.com/ningzining/L-ctl/logic/version"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -12,6 +11,7 @@ const (
 	TemplateRepoUrl    = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
 	LocalRepoUrl       = "repo/repo.tpl"
 	DefaultTemplateDir = ".L-ctl"
+	Template           = "template"
 )
 
 // GenerateTemplateDir 生成默认模板文件的路径
@@ -20,7 +20,7 @@ func GenerateTemplateDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, version.BuildVersion)
+	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Template)
 	return resultDir, nil
 }
 
