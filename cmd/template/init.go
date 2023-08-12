@@ -1,4 +1,4 @@
-package cmd
+package template
 
 import (
 	"github.com/ningzining/L-ctl/logic"
@@ -15,5 +15,5 @@ var initCmd = &cobra.Command{
 }
 
 func init() {
-	templateCmd.AddCommand(initCmd)
+	Cmd.AddCommand(initCmd)
 }
