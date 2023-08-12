@@ -8,7 +8,6 @@ import (
 	"github.com/ningzining/L-ctl/util/httputil"
 	"github.com/ningzining/L-ctl/util/pathutil"
 	"github.com/ningzining/L-ctl/util/templateutil"
-	"net/url"
 	"path/filepath"
 )
 
@@ -64,10 +63,7 @@ func generateFilePath(dirPath, tableName, style string) (string, error) {
 	default:
 		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(tableName))
 	}
-	filePath, err := url.JoinPath(dirPath, fileName)
-	if err != nil {
-		return "", err
-	}
+	filePath := filepath.Join(dirPath, fileName)
 	abs, err := filepath.Abs(filePath)
 	if err != nil {
 		return "", nil

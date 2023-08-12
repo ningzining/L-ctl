@@ -2,8 +2,8 @@ package templateutil
 
 import (
 	"github.com/ningzining/L-ctl/logic/version"
-	"net/url"
 	"os"
+	"path/filepath"
 	"text/template"
 )
 
@@ -20,10 +20,7 @@ func GenerateTemplateDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resultDir, err := url.JoinPath(dirPrefix, DefaultTemplateDir, version.BuildVersion)
-	if err != nil {
-		return "", err
-	}
+	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, version.BuildVersion)
 	return resultDir, nil
 }
 
@@ -33,10 +30,7 @@ func GetRepoTemplatePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	result, err := url.JoinPath(dir, LocalRepoUrl)
-	if err != nil {
-		return "", err
-	}
+	result := filepath.Join(dir, LocalRepoUrl)
 	return result, nil
 }
 

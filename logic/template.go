@@ -6,8 +6,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/util/pathutil"
 	"github.com/ningzining/L-ctl/util/templateutil"
-	"net/url"
 	"os/exec"
+	"path/filepath"
 )
 
 type Template struct{}
@@ -35,10 +35,7 @@ func (t *Template) Init() error {
 		}
 	}
 	// 判断模板文件是否被初始化过
-	localDir, err := url.JoinPath(templateDir, ".git")
-	if err != nil {
-		return err
-	}
+	localDir := filepath.Join(templateDir, ".git")
 	if b, err := pathutil.Exist(localDir); b || err != nil {
 		return errors.New(fmt.Sprintf("目标文件夹不为空,模板初始化失败,请检查目标文件夹: %s\n", templateDir))
 	}
