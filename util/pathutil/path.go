@@ -18,7 +18,7 @@ func Exist(path string) (bool, error) {
 
 // Mkdir 创建文件夹
 func Mkdir(path string) error {
-	err := os.MkdirAll(path, 0777)
+	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return err
 	}
