@@ -18,6 +18,7 @@ const (
 	LocalModelUrl      = "model/model.tpl"
 	DefaultTemplateDir = ".L-ctl"
 	Template           = "template"
+	GoFileSuffix       = ".go"
 )
 
 // GenerateTemplateDir 生成默认模板文件的路径
@@ -54,34 +55,22 @@ func GetModelTemplatePath() (string, error) {
 // templatePath: 模板路径
 // filePath: 保存的路径
 // data: 数据源
-func SaveTemplateByLocal(templatePath string, filePath string, data interface{}) error {
-	templateFiles, err := template.ParseFiles(templatePath)
+func SaveTemplateByLocal(templatePath string, filePath string, data map[string]any) error {
+	templateFile, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return err
 	}
 
+	// 渲染数据到模板
 	buf := new(bytes.Buffer)
+	err = templateFile.Execute(buf, data)
 	if err != nil {
 		return err
 	}
 
-	err = templateFiles.Execute(buf, data)
-	if err != nil {
+	// 创建文件
+	if err = createFile(filePath, buf.Bytes()); err != nil {
 		return err
-	}
-
-	ext := path.Ext(filePath)
-	if ext == ".go" {
-		formatOutput, err := format.Source(buf.Bytes())
-		if err != nil {
-			return errors.New(fmt.Sprintf("go文件格式化异常: %s", err))
-		}
-		buf.Reset()
-		buf.Write(formatOutput)
-	}
-	err = os.WriteFile(filePath, buf.Bytes(), os.ModePerm)
-	if err != nil {
-		return errors.New(fmt.Sprintf("文件创建失败: %s", err))
 	}
 	return nil
 }
@@ -91,20 +80,41 @@ func SaveTemplateByLocal(templatePath string, filePath string, data interface{})
 // filePath: 保存的路径
 // data: 数据源
 func SaveTemplateByData(templateData []byte, filePath string, data interface{}) error {
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
 	// 根据字节数组创建模板
-	files, err := template.New("temp").Parse(string(templateData))
+	templateFile, err := template.New("temp").Parse(string(templateData))
 	if err != nil {
 		return err
 	}
+
 	// 渲染数据到模板
-	err = files.Execute(file, data)
-	if err != nil {
+	buf := new(bytes.Buffer)
+	err = templateFile.Execute(buf, data)
+
+	// 创建文件
+	if err = createFile(filePath, buf.Bytes()); err != nil {
 		return err
+	}
+	return nil
+}
+
+// 创建文件
+// filePath: 文件路径
+// dadaBytes: 字节数组
+func createFile(filePath string, dataByes []byte) error {
+	buf := new(bytes.Buffer)
+	// 如果是创建go文件，则进行一次goFormat格式化
+	ext := path.Ext(filePath)
+	if ext == GoFileSuffix {
+		formatOutput, err := format.Source(dataByes)
+		if err != nil {
+			return errors.New(fmt.Sprintf("go文件格式化异常: %s\n", err))
+		}
+		buf.Write(formatOutput)
+	} else {
+		buf.Write(dataByes)
+	}
+	if err := os.WriteFile(filePath, buf.Bytes(), os.ModePerm); err != nil {
+		return errors.New(fmt.Sprintf("文件创建失败: %s", err))
 	}
 	return nil
 }

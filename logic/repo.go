@@ -29,6 +29,7 @@ func (r *Repo) Generate(dir, tableName, style string) error {
 	if err != nil {
 		return err
 	}
+
 	// 判断目标文件是否存在
 	exist, err := pathutil.Exist(filePath)
 	if err != nil {
@@ -37,6 +38,7 @@ func (r *Repo) Generate(dir, tableName, style string) error {
 	if exist {
 		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
 	}
+
 	// 创建文件夹
 	dirAbs, err := filepath.Abs(dir)
 	if err != nil {
@@ -45,9 +47,10 @@ func (r *Repo) Generate(dir, tableName, style string) error {
 	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
 		return err
 	}
-	// 生成目标文件文件
-	data := genTemplateData(filePath, tableName)
-	if err = createFile(filePath, data); err != nil {
+
+	// 获取数据并生成模板文件
+	data := genRepoTemplateData(filePath, tableName)
+	if err = createRepoTemplate(filePath, data); err != nil {
 		return err
 	}
 
@@ -75,7 +78,7 @@ func generateFilePath(dirPath, tableName, style string) (string, error) {
 }
 
 // 创建文件
-func createFile(filePath string, data interface{}) error {
+func createRepoTemplate(filePath string, data map[string]any) error {
 	init, err := isInit()
 	if err != nil {
 		return err
@@ -126,21 +129,21 @@ func saveByOriginTemplate(savePath string, data interface{}) error {
 }
 
 // 通过本地文件创建模板
-func saveByLocalTemplate(savePath string, data interface{}) error {
+func saveByLocalTemplate(savePath string, data map[string]any) error {
 	// 获取本地模板文件的路径
-	repoTemplatePath, err := templateutil.GetRepoTemplatePath()
+	templatePath, err := templateutil.GetRepoTemplatePath()
 	if err != nil {
 		return err
 	}
 	// 通过本地文件保存模板
-	if err = templateutil.SaveTemplateByLocal(repoTemplatePath, savePath, data); err != nil {
+	if err = templateutil.SaveTemplateByLocal(templatePath, savePath, data); err != nil {
 		return err
 	}
 	return nil
 }
 
 // 生成模板所需要的data数据
-func genTemplateData(filePath, tableName string) map[string]any {
+func genRepoTemplateData(filePath, tableName string) map[string]any {
 	data := map[string]any{
 		"Name":      caseutil.ToCamelCase(tableName, true),
 		"TableName": tableName,

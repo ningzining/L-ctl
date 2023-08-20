@@ -43,36 +43,38 @@ type ModelGenerateArg struct {
 func (m *Model) Generate(arg ModelGenerateArg) error {
 	dsn, err := mysql.ParseDSN(arg.Url)
 	if err != nil {
-		return errors.New(fmt.Sprintf("mysql url解析异常: %s", err))
+		return errors.New(fmt.Sprintf("mysql url解析异常: %s\n", err))
 	}
 
+	// 获取mysql系统库的dsn连接
 	databaseSource := strings.TrimSuffix(arg.Url, "/"+dsn.DBName) + informationSchema
 	db, err := sql.NewMysql(databaseSource)
 	if err != nil {
-		return errors.New(fmt.Sprintf("数据库连接异常: %s", err))
+		return errors.New(fmt.Sprintf("数据库连接异常: %s\n", err))
 	}
 
 	// 查询目标数据库中所有的表名
 	tables, err := model.NewTableRepo(db).GetAllTables(dsn.DBName)
 	if err != nil {
-		return errors.New(fmt.Sprintf("数据库查询数据异常: %s", err))
+		return errors.New(fmt.Sprintf("数据库查询数据异常: %s\n", err))
 	}
+
 	// 获取需要生成model的数据库表表名
-	generateTables := getGenerateTables(arg.Tables, tables)
-	if len(generateTables) == 0 {
-		return errors.New(fmt.Sprintf("不存在需要生成的数据库表"))
+	tableNames := getGenerateTables(arg.Tables, tables)
+	if len(tableNames) == 0 {
+		return errors.New(fmt.Sprintf("不存在需要生成的数据库表: %s\n", arg.Tables))
 	}
 
 	// 获取所有表相关的列信息
-	tableMap, err := getTableMap(db, dsn.DBName, generateTables)
+	tableMap, err := getTableStruct(db, dsn.DBName, tableNames)
 	if err != nil {
-		return errors.New(fmt.Sprintf("数据库表列信息查询异常: %s", err))
+		return errors.New(fmt.Sprintf("数据库表列信息查询异常: %s\n", err))
 	}
 
 	// 生成目标文件
-	err = genModelFromTable(tableMap, arg.Dir)
+	err = genModelTemplate(tableMap, arg.Dir)
 	if err != nil {
-		return errors.New(fmt.Sprintf("生成文件异常: %s", err))
+		return errors.New(fmt.Sprintf("生成文件异常: %s\n", err))
 	}
 	return nil
 }
@@ -80,7 +82,8 @@ func (m *Model) Generate(arg ModelGenerateArg) error {
 // 获取需要生成model的数据库表表名
 func getGenerateTables(tableArg string, tables []string) []string {
 	splitTable := strings.Split(tableArg, ",")
-	if len(splitTable) == 0 {
+	// 如果没有输入指定表名，则默认生成全部的表
+	if tableArg == "" {
 		return tables
 	}
 	var resTable []string
@@ -95,7 +98,7 @@ func getGenerateTables(tableArg string, tables []string) []string {
 }
 
 // 获取所有表相关的列信息
-func getTableMap(db *gorm.DB, dbName string, tables []string) (map[string]*model.Table, error) {
+func getTableStruct(db *gorm.DB, dbName string, tables []string) (map[string]*model.Table, error) {
 	tableMap := make(map[string]*model.Table)
 	for _, tableName := range tables {
 		table, err := model.NewColumnRepo(db).FindColumns(dbName, tableName)
@@ -107,7 +110,8 @@ func getTableMap(db *gorm.DB, dbName string, tables []string) (map[string]*model
 	return tableMap, nil
 }
 
-func genModelFromTable(tables map[string]*model.Table, dir string) error {
+// 生成目标model文件
+func genModelTemplate(tables map[string]*model.Table, dir string) error {
 	for _, item := range tables {
 		table, err := parseutil.ConvertTable(item)
 		if err != nil {
@@ -122,25 +126,6 @@ func genModelFromTable(tables map[string]*model.Table, dir string) error {
 }
 
 func genModel(table *parseutil.Table, dir string) error {
-	if dir == "" {
-		dir = defaultDir
-	}
-	abs, err := filepath.Abs(dir)
-	if err != nil {
-		return err
-	}
-	pkg := filepath.Base(abs)
-	pkgMap := make(map[string]any)
-	pkgMap["pkg"] = pkg
-
-	importsMap := genImport(table)
-	typesMap := genTypes(table)
-
-	res := mergeMap(pkgMap, importsMap, typesMap)
-	templateDir, err := templateutil.GetModelTemplatePath()
-	if err != nil {
-		return err
-	}
 	filePath := path.Join(dir, fmt.Sprintf("%s%s", caseutil.ToUnderLineCase(table.TableName), ".go"))
 	// 判断目标文件是否存在
 	exist, err := pathutil.Exist(filePath)
@@ -150,20 +135,44 @@ func genModel(table *parseutil.Table, dir string) error {
 	if exist {
 		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
 	}
+
 	// 创建文件夹
-	if err = pathutil.MkdirIfNotExist(dir); err != nil {
-		return err
+	if dir == "" {
+		dir = defaultDir
+	}
+	dirAbs, err := filepath.Abs(dir)
+	if err != nil {
+		return errors.New(fmt.Sprintf("获取绝对路径失败: %s\n", err))
+	}
+	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
+		return errors.New(fmt.Sprintf("创建目录失败: %s", err))
 	}
 
-	err = templateutil.SaveTemplateByLocal(templateDir, filePath, res)
-	if err != nil {
-		return err
+	// 获取数据并生成模板文件
+	data := genModelTemplateData(filePath, table)
+	if err = createModelTemplate(filePath, data); err != nil {
+		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
 	}
 
 	color.Green("文件生成成功: %s", filePath)
 	return nil
 }
 
+// 生成model模板的数据
+func genModelTemplateData(filePath string, table *parseutil.Table) map[string]any {
+	pkgMap := map[string]any{
+		"pkg": filepath.Base(filePath),
+	}
+	// 获取需要import的集合
+	importsMap := genImport(table)
+	// 获取结构体的集合
+	typesMap := genTypes(table)
+
+	data := mergeMap(pkgMap, importsMap, typesMap)
+	return data
+}
+
+// 生成import结构
 func genImport(table *parseutil.Table) map[string]any {
 	importsMap := make(map[string]any)
 	for _, column := range table.Fields {
@@ -177,6 +186,7 @@ func genImport(table *parseutil.Table) map[string]any {
 	return importsMap
 }
 
+// 生成model结构体
 func genTypes(table *parseutil.Table) map[string]any {
 	res := make(map[string]any)
 	var fields []map[string]any
@@ -194,6 +204,7 @@ func genTypes(table *parseutil.Table) map[string]any {
 	return res
 }
 
+// 合并所有的map集合
 func mergeMap(source ...map[string]any) map[string]any {
 	res := make(map[string]any)
 	for _, t := range source {
@@ -202,4 +213,18 @@ func mergeMap(source ...map[string]any) map[string]any {
 		}
 	}
 	return res
+}
+
+// 创建model模板文件
+func createModelTemplate(filePath string, data map[string]any) error {
+	// 获取本地模板文件的路径
+	templatePath, err := templateutil.GetModelTemplatePath()
+	if err != nil {
+		return err
+	}
+	// 通过本地文件保存模板
+	if err = templateutil.SaveTemplateByLocal(templatePath, filePath, data); err != nil {
+		return err
+	}
+	return nil
 }

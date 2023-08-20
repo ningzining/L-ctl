@@ -86,13 +86,14 @@ type Table struct {
 }
 
 type Field struct {
-	OriginalName    string // 数据库列名
+	OriginalName    string // 数据库列名，用于生成gorm的tag
 	Name            string // 字段名
 	DataType        string // 数据类型
 	Comment         string // 注释
 	OrdinalPosition int    // 排序顺序
 }
 
+// ConvertTable 转换数据库相关的字段为go结构体相关字段
 func ConvertTable(table *model.Table) (*Table, error) {
 	var resTable Table
 	resTable.TableName = table.TableName
@@ -120,6 +121,7 @@ func ConvertTable(table *model.Table) (*Table, error) {
 	return &resTable, nil
 }
 
+// ConvertStringDataType 转换mysql的数据类型为go的数据类型
 func ConvertStringDataType(sourceType string) (goType string, err error) {
 	tp, ok := commonMysqlDataTypeMapString[strings.ToLower(sourceType)]
 	if !ok {
