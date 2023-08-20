@@ -49,7 +49,7 @@ func (r *Repo) Generate(dir, tableName, style string) error {
 	}
 
 	// 获取数据并生成模板文件
-	data := genRepoTemplateData(filePath, tableName)
+	data := genRepoTemplateData(dirAbs, tableName)
 	if err = createRepoTemplate(filePath, data); err != nil {
 		return err
 	}
@@ -143,11 +143,11 @@ func saveByLocalTemplate(savePath string, data map[string]any) error {
 }
 
 // 生成模板所需要的data数据
-func genRepoTemplateData(filePath, tableName string) map[string]any {
+func genRepoTemplateData(dirAbs, tableName string) map[string]any {
 	data := map[string]any{
 		"Name":      caseutil.ToCamelCase(tableName, true),
 		"TableName": tableName,
-		"pkg":       filepath.Base(filePath),
+		"pkg":       filepath.Base(dirAbs),
 	}
 	return data
 }

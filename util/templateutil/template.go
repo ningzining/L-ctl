@@ -107,9 +107,10 @@ func createFile(filePath string, dataByes []byte) error {
 	if ext == GoFileSuffix {
 		formatOutput, err := format.Source(dataByes)
 		if err != nil {
-			return errors.New(fmt.Sprintf("go文件格式化异常: %s\n", err))
+			buf.Write(dataByes)
+		} else {
+			buf.Write(formatOutput)
 		}
-		buf.Write(formatOutput)
 	} else {
 		buf.Write(dataByes)
 	}

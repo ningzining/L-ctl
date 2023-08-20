@@ -149,7 +149,7 @@ func genModel(table *parseutil.Table, dir string) error {
 	}
 
 	// 获取数据并生成模板文件
-	data := genModelTemplateData(filePath, table)
+	data := genModelTemplateData(dirAbs, table)
 	if err = createModelTemplate(filePath, data); err != nil {
 		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
 	}
@@ -159,9 +159,9 @@ func genModel(table *parseutil.Table, dir string) error {
 }
 
 // 生成model模板的数据
-func genModelTemplateData(filePath string, table *parseutil.Table) map[string]any {
+func genModelTemplateData(dirAbs string, table *parseutil.Table) map[string]any {
 	pkgMap := map[string]any{
-		"pkg": filepath.Base(filePath),
+		"pkg": filepath.Base(dirAbs),
 	}
 	// 获取需要import的集合
 	importsMap := genImport(table)
