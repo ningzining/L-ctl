@@ -1,0 +1,129 @@
+package parseutil
+
+import (
+	"errors"
+	"fmt"
+	"github.com/ningzining/L-ctl/sql/model"
+	"github.com/ningzining/L-ctl/util/caseutil"
+	"sort"
+	"strings"
+)
+
+var commonMysqlDataTypeMapString = map[string]string{
+	// For consistency, all integer types are converted to int64
+	// bool
+	"bool":    "bool",
+	"_bool":   "pq.BoolArray",
+	"boolean": "bool",
+	// number
+	"tinyint":   "int64",
+	"smallint":  "int64",
+	"mediumint": "int64",
+	"int":       "int64",
+	"int1":      "int64",
+	"int2":      "int64",
+	"_int2":     "pq.Int64Array",
+	"int3":      "int64",
+	"int4":      "int64",
+	"_int4":     "pq.Int64Array",
+	"int8":      "int64",
+	"_int8":     "pq.Int64Array",
+	"integer":   "int64",
+	"_integer":  "pq.Int64Array",
+	"bigint":    "int64",
+	"float":     "float64",
+	"float4":    "float64",
+	"_float4":   "pq.Float64Array",
+	"float8":    "float64",
+	"_float8":   "pq.Float64Array",
+	"double":    "float64",
+	"decimal":   "decimal.Decimal",
+	"dec":       "float64",
+	"fixed":     "float64",
+	"real":      "float64",
+	"bit":       "byte",
+	// date & time
+	"date":      "*time.Time",
+	"datetime":  "*time.Time",
+	"timestamp": "*time.Time",
+	"time":      "string",
+	"year":      "int64",
+	// string
+	"linestring":      "string",
+	"multilinestring": "string",
+	"nvarchar":        "string",
+	"nchar":           "string",
+	"char":            "string",
+	"bpchar":          "string",
+	"_char":           "pq.StringArray",
+	"character":       "string",
+	"varchar":         "string",
+	"_varchar":        "pq.StringArray",
+	"binary":          "string",
+	"bytea":           "string",
+	"longvarbinary":   "string",
+	"varbinary":       "string",
+	"tinytext":        "string",
+	"text":            "string",
+	"_text":           "pq.StringArray",
+	"mediumtext":      "string",
+	"longtext":        "string",
+	"enum":            "string",
+	"set":             "string",
+	"json":            "string",
+	"jsonb":           "string",
+	"blob":            "string",
+	"longblob":        "string",
+	"mediumblob":      "string",
+	"tinyblob":        "string",
+	"ltree":           "[]byte",
+}
+
+type Table struct {
+	TableName string
+	DbName    string
+	Fields    []*Field
+}
+
+type Field struct {
+	OriginalName    string // 数据库列名
+	Name            string // 字段名
+	DataType        string // 数据类型
+	Comment         string // 注释
+	OrdinalPosition int    // 排序顺序
+}
+
+func ConvertTable(table *model.Table) (*Table, error) {
+	var resTable Table
+	resTable.TableName = table.TableName
+	resTable.DbName = table.DbName
+
+	var fields []*Field
+	for _, column := range table.Columns {
+		goType, err := ConvertStringDataType(column.DataType)
+		if err != nil {
+			return nil, err
+		}
+		field := &Field{
+			OriginalName:    column.Name,
+			Name:            caseutil.ToCamelCase(column.Name, true),
+			DataType:        goType,
+			Comment:         strings.NewReplacer("\r", "", "\n", "").Replace(column.Comment),
+			OrdinalPosition: column.OrdinalPosition,
+		}
+		fields = append(fields, field)
+	}
+	sort.Slice(fields, func(i, j int) bool {
+		return fields[i].OrdinalPosition < fields[j].OrdinalPosition
+	})
+	resTable.Fields = fields
+	return &resTable, nil
+}
+
+func ConvertStringDataType(sourceType string) (goType string, err error) {
+	tp, ok := commonMysqlDataTypeMapString[strings.ToLower(sourceType)]
+	if !ok {
+		return "", errors.New(fmt.Sprintf("不支持目标mysql列类型: %s", sourceType))
+	}
+	return tp, nil
+}
