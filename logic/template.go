@@ -29,7 +29,7 @@ func (t *Template) Init() error {
 	}
 	if !exist {
 		// 不存在目录则创建目标目录
-		err := pathutil.Mkdir(templateDir)
+		err := pathutil.MkdirIfNotExist(templateDir)
 		if err != nil {
 			return err
 		}

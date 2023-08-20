@@ -23,31 +23,34 @@ const (
 )
 
 // Generate 生成repo文件
-func (r *Repo) Generate(dirPath, tableName, style string) error {
+func (r *Repo) Generate(dir, tableName, style string) error {
 	// 获取生成文件的路径
-	filePath, err := generateFilePath(dirPath, tableName, style)
+	filePath, err := generateFilePath(dir, tableName, style)
 	if err != nil {
 		return err
 	}
 	// 判断目标文件是否存在
 	exist, err := pathutil.Exist(filePath)
 	if err != nil {
-		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
+		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err))
 	}
 	if exist {
 		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
 	}
 	// 创建文件夹
-	if err = pathutil.Mkdir(dirPath); err != nil {
+	dirAbs, err := filepath.Abs(dir)
+	if err != nil {
+		return errors.New(fmt.Sprintf("获取绝对路径失败: %s\n", err))
+	}
+	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
 		return err
 	}
-	// 新建文件
-	m := make(map[string]interface{})
-	m["Name"] = caseutil.ToCamelCase(tableName, true)
-	m["TableName"] = tableName
-	if err = createFile(filePath, m); err != nil {
+	// 生成目标文件文件
+	data := genTemplateData(filePath, tableName)
+	if err = createFile(filePath, data); err != nil {
 		return err
 	}
+
 	color.Green("文件生成成功: %s", filePath)
 	return nil
 }
@@ -134,4 +137,14 @@ func saveByLocalTemplate(savePath string, data interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// 生成模板所需要的data数据
+func genTemplateData(filePath, tableName string) map[string]any {
+	data := map[string]any{
+		"Name":      caseutil.ToCamelCase(tableName, true),
+		"TableName": tableName,
+		"pkg":       filepath.Base(filePath),
+	}
+	return data
 }

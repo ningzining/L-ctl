@@ -16,11 +16,14 @@ func Exist(path string) (bool, error) {
 	return false, err
 }
 
-// Mkdir 创建文件夹
-func Mkdir(path string) error {
-	err := os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		return err
+// MkdirIfNotExist 创建文件夹，如果不存在则创建
+func MkdirIfNotExist(dir string) error {
+	if len(dir) == 0 {
+		return nil
+	}
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return os.MkdirAll(dir, os.ModePerm)
 	}
 	return nil
 }

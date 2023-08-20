@@ -151,7 +151,7 @@ func genModel(table *parseutil.Table, dir string) error {
 		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
 	}
 	// 创建文件夹
-	if err = pathutil.Mkdir(dir); err != nil {
+	if err = pathutil.MkdirIfNotExist(dir); err != nil {
 		return err
 	}
 
