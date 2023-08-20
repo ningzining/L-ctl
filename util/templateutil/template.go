@@ -1,7 +1,12 @@
 package templateutil
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"go/format"
 	"os"
+	"path"
 	"path/filepath"
 	"text/template"
 )
@@ -10,6 +15,7 @@ const (
 	TemplateGitUrl     = "https://github.com/ningzining/L-ctl-template.git"
 	TemplateRepoUrl    = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
 	LocalRepoUrl       = "repo/repo.tpl"
+	LocalModelUrl      = "model/model.tpl"
 	DefaultTemplateDir = ".L-ctl"
 	Template           = "template"
 )
@@ -34,6 +40,16 @@ func GetRepoTemplatePath() (string, error) {
 	return result, nil
 }
 
+// GetModelTemplatePath 获取本地model.tpl模板文件的路径
+func GetModelTemplatePath() (string, error) {
+	dir, err := GenerateTemplateDir()
+	if err != nil {
+		return "", err
+	}
+	result := filepath.Join(dir, LocalModelUrl)
+	return result, nil
+}
+
 // SaveTemplateByLocal 渲染数据到指定的模板，并保存
 // templatePath: 模板路径
 // filePath: 保存的路径
@@ -44,16 +60,28 @@ func SaveTemplateByLocal(templatePath string, filePath string, data interface{})
 		return err
 	}
 
-	file, err := os.Create(filePath)
+	buf := new(bytes.Buffer)
 	if err != nil {
 		return err
 	}
 
-	defer file.Close()
-
-	err = templateFiles.Execute(file, data)
+	err = templateFiles.Execute(buf, data)
 	if err != nil {
 		return err
+	}
+
+	ext := path.Ext(filePath)
+	if ext == ".go" {
+		formatOutput, err := format.Source(buf.Bytes())
+		if err != nil {
+			return errors.New(fmt.Sprintf("go文件格式化异常: %s", err))
+		}
+		buf.Reset()
+		buf.Write(formatOutput)
+	}
+	err = os.WriteFile(filePath, buf.Bytes(), os.ModePerm)
+	if err != nil {
+		return errors.New(fmt.Sprintf("文件创建失败: %s", err))
 	}
 	return nil
 }

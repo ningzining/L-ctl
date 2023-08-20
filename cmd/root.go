@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/ningzining/L-ctl/cmd/model"
 	"github.com/ningzining/L-ctl/cmd/repo"
 	"github.com/ningzining/L-ctl/cmd/template"
 	"github.com/ningzining/L-ctl/logic/version"
@@ -30,4 +31,5 @@ func init() {
 	rootCmd.Version = fmt.Sprintf("%s %s/%s", version.BuildVersion, runtime.GOOS, runtime.GOARCH)
 	rootCmd.AddCommand(template.Cmd)
 	rootCmd.AddCommand(repo.Cmd)
+	rootCmd.AddCommand(model.Cmd)
 }
