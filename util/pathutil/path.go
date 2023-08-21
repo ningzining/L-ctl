@@ -1,7 +1,15 @@
 package pathutil
 
 import (
+	"fmt"
+	"github.com/ningzining/L-ctl/util/caseutil"
 	"os"
+	"path/filepath"
+)
+
+const (
+	CamelCase     = "lCtl"  // 驼峰命名
+	UnderLineCase = "l_ctl" // 下划线命名
 )
 
 // Exist 判断该路径是否存在
@@ -26,4 +34,22 @@ func MkdirIfNotExist(dir string) error {
 		return os.MkdirAll(dir, os.ModePerm)
 	}
 	return nil
+}
+
+// GenFilePath 获取生成文件的路径
+func GenFilePath(dirPath, fileName, style string) (string, error) {
+	switch style {
+	case UnderLineCase:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(fileName))
+	case CamelCase:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToCamelCase(fileName, false))
+	default:
+		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(fileName))
+	}
+	dirAbs, err := filepath.Abs(dirPath)
+	filePath := filepath.Join(dirAbs, fileName)
+	if err != nil {
+		return "", err
+	}
+	return filePath, nil
 }

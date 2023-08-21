@@ -25,7 +25,7 @@ const (
 // Generate 生成repo文件
 func (r *Repo) Generate(dir, tableName, style string) error {
 	// 获取生成文件的路径
-	filePath, err := generateFilePath(dir, tableName, style)
+	filePath, err := pathutil.GenFilePath(dir, tableName, style)
 	if err != nil {
 		return err
 	}
@@ -56,25 +56,6 @@ func (r *Repo) Generate(dir, tableName, style string) error {
 
 	color.Green("文件生成成功: %s", filePath)
 	return nil
-}
-
-// 获取生成目标文件的路径
-func generateFilePath(dirPath, tableName, style string) (string, error) {
-	var fileName string
-	switch style {
-	case UnderLineCase:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(tableName))
-	case CamelCase:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToCamelCase(tableName, false))
-	default:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(tableName))
-	}
-	filePath := filepath.Join(dirPath, fileName)
-	abs, err := filepath.Abs(filePath)
-	if err != nil {
-		return "", nil
-	}
-	return abs, nil
 }
 
 // 创建文件

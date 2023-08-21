@@ -12,7 +12,6 @@ import (
 	"github.com/ningzining/L-ctl/util/pathutil"
 	"github.com/ningzining/L-ctl/util/templateutil"
 	"gorm.io/gorm"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -34,9 +33,11 @@ const (
 )
 
 type ModelGenerateArg struct {
-	Url    string
-	Dir    string
-	Tables string
+	Url       string
+	Dir       string
+	Tables    string
+	Overwrite string
+	Style     string
 }
 
 // Generate 生成model文件
@@ -72,7 +73,7 @@ func (m *Model) Generate(arg ModelGenerateArg) error {
 	}
 
 	// 生成目标文件
-	err = genModelTemplate(tableMap, arg.Dir)
+	err = genModelTemplate(tableMap, arg)
 	if err != nil {
 		return errors.New(fmt.Sprintf("生成文件异常: %s\n", err))
 	}
@@ -111,13 +112,13 @@ func getTableStruct(db *gorm.DB, dbName string, tables []string) (map[string]*mo
 }
 
 // 生成目标model文件
-func genModelTemplate(tables map[string]*model.Table, dir string) error {
+func genModelTemplate(tables map[string]*model.Table, arg ModelGenerateArg) error {
 	for _, item := range tables {
 		table, err := parseutil.ConvertTable(item)
 		if err != nil {
 			return err
 		}
-		err = genModel(table, dir)
+		err = genModel(table, arg)
 		if err != nil {
 			return err
 		}
@@ -125,17 +126,8 @@ func genModelTemplate(tables map[string]*model.Table, dir string) error {
 	return nil
 }
 
-func genModel(table *parseutil.Table, dir string) error {
-	filePath := path.Join(dir, fmt.Sprintf("%s%s", caseutil.ToUnderLineCase(table.TableName), ".go"))
-	// 判断目标文件是否存在
-	exist, err := pathutil.Exist(filePath)
-	if err != nil {
-		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
-	}
-	if exist {
-		return errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败,请选择另外的路径\n", filePath))
-	}
-
+func genModel(table *parseutil.Table, arg ModelGenerateArg) error {
+	dir := arg.Dir
 	// 创建文件夹
 	if dir == "" {
 		dir = defaultDir
@@ -146,6 +138,20 @@ func genModel(table *parseutil.Table, dir string) error {
 	}
 	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
 		return errors.New(fmt.Sprintf("创建目录失败: %s", err))
+	}
+
+	// 判断目标文件是否存在
+	filePath, err := pathutil.GenFilePath(dirAbs, table.TableName, arg.Style)
+	if err != nil {
+		return err
+	}
+	exist, err := pathutil.Exist(filePath)
+	if err != nil {
+		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
+	}
+	if exist && arg.Overwrite != "true" {
+		color.Red(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", filePath))
+		return nil
 	}
 
 	// 获取数据并生成模板文件

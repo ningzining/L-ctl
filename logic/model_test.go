@@ -9,7 +9,7 @@ func TestModel_Generate(t *testing.T) {
 	arg := ModelGenerateArg{
 		Url:    "root:root@tcp(127.0.0.1:3306)/test",
 		Dir:    "./cache",
-		Tables: "sysuser",
+		Tables: "",
 	}
 	err := NewModel().Generate(arg)
 	if err != nil {
