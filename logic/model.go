@@ -200,7 +200,7 @@ func genTypes(table *parseutil.Table) map[string]any {
 		field := make(map[string]any)
 		field["name"] = caseutil.ToCamelCase(f.Name, true)
 		field["type"] = f.DataType
-		field["tag"] = fmt.Sprintf("`gorm:\"column:%s\"`", f.OriginalName)
+		field["tag"] = fmt.Sprintf("`gorm:\"column:%s;comment:%s\"`", f.OriginalName, f.Comment)
 		field["hasComment"] = f.Comment != ""
 		field["comment"] = f.Comment
 		fields = append(fields, field)
