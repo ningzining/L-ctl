@@ -107,7 +107,7 @@ func ConvertTable(table *model.Table) (*Table, error) {
 		}
 		field := &Field{
 			OriginalName:    column.Name,
-			Name:            caseutil.ToCamelCase(column.Name, true),
+			Name:            caseutil.UpperCamelCase(column.Name),
 			DataType:        goType,
 			Comment:         strings.NewReplacer("\r", "", "\n", "").Replace(column.Comment),
 			OrdinalPosition: column.OrdinalPosition,

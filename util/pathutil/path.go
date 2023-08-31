@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	CamelCase     = "lCtl"  // 驼峰命名
-	UnderLineCase = "l_ctl" // 下划线命名
+	LowerCamelCase = "lCtl"  // 驼峰命名
+	UnderLineCase  = "l_ctl" // 下划线命名
 )
 
 // Exist 判断该路径是否存在
@@ -40,11 +40,11 @@ func MkdirIfNotExist(dir string) error {
 func GenFilePath(dirPath, fileName, style string) (string, error) {
 	switch style {
 	case UnderLineCase:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(fileName))
-	case CamelCase:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToCamelCase(fileName, false))
+		fileName = fmt.Sprintf("%s.go", caseutil.UnderLineCase(fileName))
+	case LowerCamelCase:
+		fileName = fmt.Sprintf("%s.go", caseutil.LowerCamelCase(fileName))
 	default:
-		fileName = fmt.Sprintf("%s.go", caseutil.ToUnderLineCase(fileName))
+		fileName = fmt.Sprintf("%s.go", caseutil.UnderLineCase(fileName))
 	}
 	dirAbs, err := filepath.Abs(dirPath)
 	filePath := filepath.Join(dirAbs, fileName)

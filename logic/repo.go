@@ -126,7 +126,7 @@ func saveByLocalTemplate(savePath string, data map[string]any) error {
 // 生成模板所需要的data数据
 func genRepoTemplateData(dirAbs, tableName string) map[string]any {
 	data := map[string]any{
-		"Name":      caseutil.ToCamelCase(tableName, true),
+		"Name":      caseutil.UpperCamelCase(tableName),
 		"TableName": tableName,
 		"pkg":       filepath.Base(dirAbs),
 	}

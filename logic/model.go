@@ -73,7 +73,7 @@ func (m *Model) Generate(arg ModelGenerateArg) error {
 	}
 
 	// 生成目标文件
-	err = genModelTemplate(tableMap, arg)
+	err = genTemplate(tableMap, arg)
 	if err != nil {
 		return errors.New(fmt.Sprintf("生成文件异常: %s\n", err))
 	}
@@ -112,13 +112,19 @@ func getTableStruct(db *gorm.DB, dbName string, tables []string) (map[string]*mo
 }
 
 // 生成目标model文件
-func genModelTemplate(tables map[string]*model.Table, arg ModelGenerateArg) error {
+func genTemplate(tables map[string]*model.Table, arg ModelGenerateArg) error {
 	for _, item := range tables {
 		table, err := parseutil.ConvertTable(item)
 		if err != nil {
 			return err
 		}
+		// 生成数据库对应实体的model结构
 		err = genModel(table, arg)
+		if err != nil {
+			return err
+		}
+		// 生成数据库对应基础操作的repo方法
+		err = genRepo(table, arg)
 		if err != nil {
 			return err
 		}
@@ -127,41 +133,65 @@ func genModelTemplate(tables map[string]*model.Table, arg ModelGenerateArg) erro
 }
 
 func genModel(table *parseutil.Table, arg ModelGenerateArg) error {
-	dir := arg.Dir
-	// 创建文件夹
-	if dir == "" {
-		dir = defaultDir
-	}
-	dirAbs, err := filepath.Abs(dir)
+	dirAbs, fileAbs, err := checkAndMkdir(table.TableName, arg)
 	if err != nil {
-		return errors.New(fmt.Sprintf("获取绝对路径失败: %s\n", err))
-	}
-	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
-		return errors.New(fmt.Sprintf("创建目录失败: %s", err))
-	}
-
-	// 判断目标文件是否存在
-	filePath, err := pathutil.GenFilePath(dirAbs, table.TableName, arg.Style)
-	if err != nil {
+		color.Red(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", fileAbs))
 		return err
 	}
-	exist, err := pathutil.Exist(filePath)
-	if err != nil {
-		return errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
-	}
-	if exist && arg.Overwrite != "true" {
-		color.Red(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", filePath))
-		return nil
-	}
-
 	// 获取数据并生成模板文件
 	data := genModelTemplateData(dirAbs, table)
-	if err = createModelTemplate(filePath, data); err != nil {
+	if err = createModelTemplate(fileAbs, data); err != nil {
 		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
 	}
 
-	color.Green("文件生成成功: %s", filePath)
+	color.Green("model文件生成成功: %s", fileAbs)
 	return nil
+}
+
+func genRepo(table *parseutil.Table, arg ModelGenerateArg) error {
+	dirAbs, fileAbs, err := checkAndMkdir(table.TableName, arg)
+	if err != nil {
+		color.Red(err.Error())
+		return err
+	}
+	// 获取数据并生成模板文件
+	data := genModelTemplateData(dirAbs, table)
+	if err = createModelTemplate(fileAbs, data); err != nil {
+		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
+	}
+
+	color.Green("repo文件生成成功: %s", fileAbs)
+	return nil
+}
+
+// 检查文件是否存在并且创建文件夹
+func checkAndMkdir(tableName string, arg ModelGenerateArg) (dirAbs, fileAbs string, err error) {
+	// 创建文件夹
+	dir := arg.Dir
+	if dir == "" {
+		dir = defaultDir
+	}
+	dirAbs, err = filepath.Abs(dir)
+	if err != nil {
+		return "", "", errors.New(fmt.Sprintf("获取绝对路径失败: %s\n", err))
+	}
+	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
+		return "", "", errors.New(fmt.Sprintf("创建目录失败: %s", err))
+	}
+
+	// 判断目标文件是否存在
+	filePath, err := pathutil.GenFilePath(dirAbs, tableName, arg.Style)
+	if err != nil {
+		return "", "", errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", fileAbs))
+	}
+	exist, err := pathutil.Exist(filePath)
+	if err != nil {
+		return "", "", errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
+	}
+	if exist && arg.Overwrite != "true" {
+		return "", "", errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", filePath))
+	}
+	return dirAbs, filePath, nil
 }
 
 // 生成model模板的数据
@@ -198,7 +228,7 @@ func genTypes(table *parseutil.Table) map[string]any {
 	var fields []map[string]any
 	for _, f := range table.Fields {
 		field := make(map[string]any)
-		field["name"] = caseutil.ToCamelCase(f.Name, true)
+		field["name"] = caseutil.UpperCamelCase(f.Name)
 		field["type"] = f.DataType
 		field["tag"] = fmt.Sprintf("`gorm:\"column:%s;comment:%s\"`", f.OriginalName, f.Comment)
 		field["hasComment"] = f.Comment != ""
@@ -206,7 +236,7 @@ func genTypes(table *parseutil.Table) map[string]any {
 		fields = append(fields, field)
 	}
 	res["fields"] = fields
-	res["objectName"] = caseutil.ToCamelCase(table.TableName, true)
+	res["objectName"] = caseutil.UpperCamelCase(table.TableName)
 	return res
 }
 
