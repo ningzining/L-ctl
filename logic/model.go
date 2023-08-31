@@ -28,7 +28,6 @@ func NewModel() *Model {
 }
 
 const (
-	defaultDir        = "./"                  // 默认生成的文件夹目录
 	informationSchema = "/information_schema" // 数据库元数据库名
 )
 
@@ -123,75 +122,24 @@ func genTemplate(tables map[string]*model.Table, arg ModelGenerateArg) error {
 		if err != nil {
 			return err
 		}
-		// 生成数据库对应基础操作的repo方法
-		err = genRepo(table, arg)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
 
 func genModel(table *parseutil.Table, arg ModelGenerateArg) error {
-	dirAbs, fileAbs, err := checkAndMkdir(table.TableName, arg)
+	dirAbs, fileAbs, err := pathutil.CheckAndMkdir(table.TableName, arg.Dir, arg.Style, arg.Overwrite)
 	if err != nil {
 		color.Red(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", fileAbs))
 		return err
 	}
 	// 获取数据并生成模板文件
 	data := genModelTemplateData(dirAbs, table)
-	if err = createModelTemplate(fileAbs, data); err != nil {
+	if err = templateutil.Create(fileAbs, data, templateutil.LocalModelUrl); err != nil {
 		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
 	}
 
 	color.Green("model文件生成成功: %s", fileAbs)
 	return nil
-}
-
-func genRepo(table *parseutil.Table, arg ModelGenerateArg) error {
-	dirAbs, fileAbs, err := checkAndMkdir(table.TableName, arg)
-	if err != nil {
-		color.Red(err.Error())
-		return err
-	}
-	// 获取数据并生成模板文件
-	data := genModelTemplateData(dirAbs, table)
-	if err = createModelTemplate(fileAbs, data); err != nil {
-		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
-	}
-
-	color.Green("repo文件生成成功: %s", fileAbs)
-	return nil
-}
-
-// 检查文件是否存在并且创建文件夹
-func checkAndMkdir(tableName string, arg ModelGenerateArg) (dirAbs, fileAbs string, err error) {
-	// 创建文件夹
-	dir := arg.Dir
-	if dir == "" {
-		dir = defaultDir
-	}
-	dirAbs, err = filepath.Abs(dir)
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("获取绝对路径失败: %s\n", err))
-	}
-	if err = pathutil.MkdirIfNotExist(dirAbs); err != nil {
-		return "", "", errors.New(fmt.Sprintf("创建目录失败: %s", err))
-	}
-
-	// 判断目标文件是否存在
-	filePath, err := pathutil.GenFilePath(dirAbs, tableName, arg.Style)
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", fileAbs))
-	}
-	exist, err := pathutil.Exist(filePath)
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("生成模板失败,%s\n", err.Error()))
-	}
-	if exist && arg.Overwrite != "true" {
-		return "", "", errors.New(fmt.Sprintf("当前路径:`%s`已存在目标文件,生成失败", filePath))
-	}
-	return dirAbs, filePath, nil
 }
 
 // 生成model模板的数据
@@ -204,7 +152,7 @@ func genModelTemplateData(dirAbs string, table *parseutil.Table) map[string]any 
 	// 获取结构体的集合
 	typesMap := genTypes(table)
 
-	data := mergeMap(pkgMap, importsMap, typesMap)
+	data := templateutil.MergeMap(pkgMap, importsMap, typesMap)
 	return data
 }
 
@@ -237,30 +185,6 @@ func genTypes(table *parseutil.Table) map[string]any {
 	}
 	res["fields"] = fields
 	res["objectName"] = caseutil.UpperCamelCase(table.TableName)
+	res["tableName"] = table.TableName
 	return res
-}
-
-// 合并所有的map集合
-func mergeMap(source ...map[string]any) map[string]any {
-	res := make(map[string]any)
-	for _, t := range source {
-		for k, v := range t {
-			res[k] = v
-		}
-	}
-	return res
-}
-
-// 创建model模板文件
-func createModelTemplate(filePath string, data map[string]any) error {
-	// 获取本地模板文件的路径
-	templatePath, err := templateutil.GetModelTemplatePath()
-	if err != nil {
-		return err
-	}
-	// 通过本地文件保存模板
-	if err = templateutil.SaveTemplateByLocal(templatePath, filePath, data); err != nil {
-		return err
-	}
-	return nil
 }

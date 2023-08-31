@@ -14,8 +14,8 @@ import (
 const (
 	TemplateGitUrl     = "https://github.com/ningzining/L-ctl-template.git"
 	TemplateRepoUrl    = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
-	LocalRepoUrl       = "repo/repo.tpl"
 	LocalModelUrl      = "model/model.tpl"
+	LocalRepoUrl       = "repo/repo.tpl"
 	DefaultTemplateDir = ".L-ctl"
 	Template           = "template"
 	GoFileSuffix       = ".go"
@@ -29,6 +29,31 @@ func GenerateTemplateDir() (string, error) {
 	}
 	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Template)
 	return resultDir, nil
+}
+
+// Create 创建模板文件
+func Create(filePath string, data map[string]any, types string) (err error) {
+	var templatePath string
+	switch types {
+	case LocalModelUrl:
+		// 获取本地模板文件的路径
+		templatePath, err = GetModelTemplatePath()
+		if err != nil {
+			return err
+		}
+	case LocalRepoUrl:
+		templatePath, err = GetRepoTemplatePath()
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("模板类型不存在")
+	}
+	// 通过本地文件保存模板
+	if err := SaveTemplateByLocal(templatePath, filePath, data); err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetRepoTemplatePath 获取本地repo.tpl模板文件的路径
@@ -75,28 +100,6 @@ func SaveTemplateByLocal(templatePath string, filePath string, data map[string]a
 	return nil
 }
 
-// SaveTemplateByData 渲染数据到指定的模板，并保存
-// templateData: 模板字节
-// filePath: 保存的路径
-// data: 数据源
-func SaveTemplateByData(templateData []byte, filePath string, data interface{}) error {
-	// 根据字节数组创建模板
-	templateFile, err := template.New("temp").Parse(string(templateData))
-	if err != nil {
-		return err
-	}
-
-	// 渲染数据到模板
-	buf := new(bytes.Buffer)
-	err = templateFile.Execute(buf, data)
-
-	// 创建文件
-	if err = createFile(filePath, buf.Bytes()); err != nil {
-		return err
-	}
-	return nil
-}
-
 // 创建文件
 // filePath: 文件路径
 // dadaBytes: 字节数组
@@ -118,4 +121,15 @@ func createFile(filePath string, dataByes []byte) error {
 		return errors.New(fmt.Sprintf("文件创建失败: %s", err))
 	}
 	return nil
+}
+
+// MergeMap 合并所有的map集合
+func MergeMap(source ...map[string]any) map[string]any {
+	res := make(map[string]any)
+	for _, t := range source {
+		for k, v := range t {
+			res[k] = v
+		}
+	}
+	return res
 }
