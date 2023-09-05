@@ -5,6 +5,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/cmd/model"
 	"github.com/ningzining/L-ctl/cmd/repo"
+	"github.com/ningzining/L-ctl/cmd/swag"
 	"github.com/ningzining/L-ctl/cmd/template"
 	"github.com/ningzining/L-ctl/logic/version"
 	"os"
@@ -32,4 +33,5 @@ func init() {
 	rootCmd.AddCommand(template.Cmd)
 	rootCmd.AddCommand(repo.Cmd)
 	rootCmd.AddCommand(model.Cmd)
+	rootCmd.AddCommand(swag.Cmd)
 }
