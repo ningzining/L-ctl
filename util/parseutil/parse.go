@@ -16,7 +16,7 @@ var commonMysqlDataTypeMapString = map[string]string{
 	"_bool":   "pq.BoolArray",
 	"boolean": "bool",
 	// number
-	"tinyint":   "int64",
+	"tinyint":   "bool",
 	"smallint":  "int64",
 	"mediumint": "int64",
 	"int":       "int64",
