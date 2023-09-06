@@ -79,10 +79,15 @@ var commonMysqlDataTypeMapString = map[string]string{
 	"ltree":           "[]byte",
 }
 
+const (
+	primary = "PRIMARY"
+)
+
 type Table struct {
-	TableName string
-	DbName    string
-	Fields    []*Field
+	TableName  string
+	DbName     string
+	Fields     []*Field
+	PrimaryKey string
 }
 
 type Field struct {
@@ -101,6 +106,11 @@ func ConvertTable(table *model.Table) (*Table, error) {
 
 	var fields []*Field
 	for _, column := range table.Columns {
+		for _, index := range column.Index {
+			if index.IndexName == primary {
+				resTable.PrimaryKey = column.Name
+			}
+		}
 		goType, err := ConvertStringDataType(column.DataType)
 		if err != nil {
 			return nil, err

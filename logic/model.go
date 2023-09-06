@@ -178,7 +178,15 @@ func genTypes(table *parseutil.Table) map[string]any {
 		field := make(map[string]any)
 		field["name"] = caseutil.UpperCamelCase(f.Name)
 		field["type"] = f.DataType
-		field["tag"] = fmt.Sprintf("`gorm:\"column:%s;comment:%s\"`", f.OriginalName, f.Comment)
+		var tag string
+		if table.PrimaryKey == f.Name {
+			tag = fmt.Sprintf("`gorm:\"primaryKey;column:%s;comment:%s\"`", f.OriginalName, f.Comment)
+		} else {
+			tag = fmt.Sprintf("`gorm:\"column:%s;comment:%s\"`", f.OriginalName, f.Comment)
+
+		}
+
+		field["tag"] = tag
 		field["hasComment"] = f.Comment != ""
 		field["comment"] = f.Comment
 		fields = append(fields, field)
