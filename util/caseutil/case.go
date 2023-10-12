@@ -83,8 +83,10 @@ func UnderLineCase(source string) string {
 	}
 	var sb strings.Builder
 	for _, s := range source {
-		if s > A && s < Z {
-			sb.WriteString(string(UnderLine))
+		if s >= A && s <= Z {
+			if sb.Len() > 0 {
+				sb.WriteString(string(UnderLine))
+			}
 			lower := strings.ToLower(string(s))
 			sb.WriteString(lower)
 		} else {
