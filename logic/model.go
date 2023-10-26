@@ -37,6 +37,7 @@ type ModelGenerateArg struct {
 	Tables    string
 	Overwrite string
 	Style     string
+	GormTag   string
 }
 
 // Generate 生成model文件
@@ -133,7 +134,7 @@ func genModel(table *parseutil.Table, arg ModelGenerateArg) error {
 		return err
 	}
 	// 获取数据并生成模板文件
-	data := genModelTemplateData(dirAbs, table)
+	data := genModelTemplateData(dirAbs, table, arg)
 	if err = templateutil.Create(fileAbs, data, templateutil.LocalModelUrl); err != nil {
 		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
 	}
@@ -143,14 +144,14 @@ func genModel(table *parseutil.Table, arg ModelGenerateArg) error {
 }
 
 // 生成model模板的数据
-func genModelTemplateData(dirAbs string, table *parseutil.Table) map[string]any {
+func genModelTemplateData(dirAbs string, table *parseutil.Table, arg ModelGenerateArg) map[string]any {
 	pkgMap := map[string]any{
 		"pkg": filepath.Base(dirAbs),
 	}
 	// 获取需要import的集合
 	importsMap := genImport(table)
 	// 获取结构体的集合
-	typesMap := genTypes(table)
+	typesMap := genTypes(table, arg)
 
 	data := templateutil.MergeMap(pkgMap, importsMap, typesMap)
 	return data
@@ -171,7 +172,7 @@ func genImport(table *parseutil.Table) map[string]any {
 }
 
 // 生成model结构体
-func genTypes(table *parseutil.Table) map[string]any {
+func genTypes(table *parseutil.Table, arg ModelGenerateArg) map[string]any {
 	res := make(map[string]any)
 	var fields []map[string]any
 	for _, f := range table.Fields {
@@ -183,10 +184,12 @@ func genTypes(table *parseutil.Table) map[string]any {
 			tag = fmt.Sprintf("`gorm:\"primaryKey;column:%s;comment:%s\"`", f.OriginalName, f.Comment)
 		} else {
 			tag = fmt.Sprintf("`gorm:\"column:%s;comment:%s\"`", f.OriginalName, f.Comment)
-
 		}
 
-		field["tag"] = tag
+		if arg.GormTag == "true" {
+			field["tag"] = tag
+		}
+
 		field["hasComment"] = f.Comment != ""
 		field["comment"] = f.Comment
 		fields = append(fields, field)

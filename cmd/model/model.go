@@ -10,6 +10,7 @@ var dir string
 var tables string
 var overwrite string
 var style string
+var gormTag string
 
 var Cmd = &cobra.Command{
 	Use:   "model",
@@ -21,6 +22,7 @@ var Cmd = &cobra.Command{
 			Tables:    tables,
 			Overwrite: overwrite,
 			Style:     style,
+			GormTag:   gormTag,
 		}
 		return logic.NewModel().Generate(arg)
 	},
@@ -32,6 +34,7 @@ func init() {
 	Cmd.Flags().StringVarP(&url, "url", "u", "", "指定数据库dsn的连接")
 	Cmd.Flags().StringVarP(&style, "style", "s", "", "设置文件名的格式（默认下划线，可改为小驼峰`lCtl`）")
 	Cmd.Flags().StringVarP(&overwrite, "overwrite", "o", "false", "是否覆盖原有的文件,可改为`true`")
+	Cmd.Flags().StringVarP(&gormTag, "gormTag", "gt", "false", "是否开启gormTag,可改为`true`")
 	if err := Cmd.MarkFlagRequired("url"); err != nil {
 		return
 	}
