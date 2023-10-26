@@ -2,11 +2,14 @@ package logic
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/util/httputil"
+	"github.com/ningzining/L-ctl/util/templateutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -52,7 +55,23 @@ func (s *Swag) Upload(arg SwagGenerateArg) error {
 		ApiOverwriteMode:    "methodAndPath",
 		SchemaOverwriteMode: "name",
 	}
-	apiFoxResData, err := httputil.Post(url, apiFoxReq)
+	configFile, err := templateutil.GenerateConfigFile()
+	if err != nil {
+		return err
+	}
+	tokenBytes, err := os.ReadFile(configFile)
+	if err != nil {
+		return err
+	}
+
+	token := string(tokenBytes)
+	token = strings.ReplaceAll(token, "\n", "")
+	token = strings.ReplaceAll(token, "\t", "")
+	token = strings.ReplaceAll(token, " ", "")
+	if token == "" {
+		return errors.New("apifox的token不存在，请配置到指定文件中")
+	}
+	apiFoxResData, err := httputil.Post(url, apiFoxReq, token)
 	if err != nil {
 		return err
 	}

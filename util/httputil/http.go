@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -22,7 +23,7 @@ func Get(url string) ([]byte, error) {
 }
 
 // Post 根据url获取http的字节流返回
-func Post(url string, req interface{}) ([]byte, error) {
+func Post(url string, req interface{}, token string) ([]byte, error) {
 	reqData, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
@@ -35,7 +36,7 @@ func Post(url string, req interface{}) ([]byte, error) {
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Apifox-Version", "2022-11-16")
-	request.Header.Set("Authorization", "Bearer APS-a0Vv1MWiWXQ4UUDs1OnwmaojLGXVIR2Z")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	res, err := client.Do(request)
 	defer res.Body.Close()
 	bytes, err := io.ReadAll(res.Body)

@@ -13,12 +13,12 @@ import (
 
 const (
 	TemplateGitUrl     = "https://github.com/ningzining/L-ctl-template.git"
-	TemplateRepoUrl    = "https://raw.githubusercontent.com/ningzining/L-ctl-template/main/repo/repo.tpl"
 	LocalModelUrl      = "model/model.tpl"
 	LocalRepoUrl       = "repo/repo.tpl"
 	DefaultTemplateDir = ".L-ctl"
 	Template           = "template"
 	GoFileSuffix       = ".go"
+	Config             = ".config"
 )
 
 // GenerateTemplateDir 生成默认模板文件的路径
@@ -28,6 +28,16 @@ func GenerateTemplateDir() (string, error) {
 		return "", err
 	}
 	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Template)
+	return resultDir, nil
+}
+
+// GenerateConfigFile 生成默认配置文件的路径
+func GenerateConfigFile() (string, error) {
+	dirPrefix, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Config)
 	return resultDir, nil
 }
 
