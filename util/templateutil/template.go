@@ -41,6 +41,14 @@ func GenerateConfigFile() (string, error) {
 	return resultDir, nil
 }
 
+func GetConfigFilePath() (string, error) {
+	dirPrefix, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dirPrefix, DefaultTemplateDir), nil
+}
+
 // Create 创建模板文件
 func Create(filePath string, data map[string]any, types string) (err error) {
 	var templatePath string
