@@ -1,7 +1,6 @@
 package model
 
 import (
-	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/go-sql-driver/mysql"
@@ -71,11 +70,7 @@ func (m *Model) Generate() error {
 	}
 
 	// 生成目标文件
-	err = m.genTemplate(tableMap)
-	if err != nil {
-		return err
-	}
-	return nil
+	return m.genTemplate(tableMap)
 }
 
 // 获取需要生成model的数据库表表名
@@ -117,8 +112,7 @@ func (m *Model) genTemplate(tables map[string]*model.Table) error {
 			return err
 		}
 		// 生成数据库对应实体的model结构
-		err = m.genModel(table)
-		if err != nil {
+		if err = m.genModel(table); err != nil {
 			return err
 		}
 	}
@@ -133,8 +127,8 @@ func (m *Model) genModel(table *parseutil.Table) error {
 	}
 	// 获取数据并生成模板文件
 	data := m.genModelTemplateData(dirAbs, table)
-	if err = templateutil.Create(fileAbs, data, templateutil.LocalModelUrl); err != nil {
-		return errors.New(fmt.Sprintf("模板文件生成失败: %s\n", err))
+	if err := m.createModelFile(fileAbs, data); err != nil {
+		return err
 	}
 
 	color.Green("model文件生成成功: %s", fileAbs)
@@ -186,4 +180,15 @@ func (m *Model) genTypes(table *parseutil.Table) map[string]any {
 	res["objectName"] = caseutil.UpperCamelCase(table.TableName)
 	res["tableName"] = table.TableName
 	return res
+}
+
+func (m *Model) createModelFile(filePath string, data map[string]any) (err error) {
+	// 获取本地模板文件的路径
+	templatePath, err := templateutil.GetModelTemplatePath()
+	if err != nil {
+		return err
+	}
+
+	// 通过本地文件保存模板
+	return templateutil.CreateTemplateFile(templatePath, filePath, data)
 }

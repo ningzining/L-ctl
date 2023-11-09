@@ -2,7 +2,6 @@ package templateutil
 
 import (
 	"bytes"
-	"errors"
 	"go/format"
 	"os"
 	"path"
@@ -18,16 +17,6 @@ const (
 	Template           = "template"
 	GoFileSuffix       = ".go"
 )
-
-// GenerateTemplateDir 生成默认模板文件的路径
-func GenerateTemplateDir() (string, error) {
-	dirPrefix, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
-	}
-	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Template)
-	return resultDir, nil
-}
 
 // GetTemplateDir 获取默认模板文件的路径
 func GetTemplateDir() (string, error) {
@@ -48,48 +37,9 @@ func GetConfigFilePath() (string, error) {
 	return filepath.Join(dirPrefix, DefaultTemplateDir), nil
 }
 
-// Create 创建模板文件
-func Create(filePath string, data map[string]any, types string) (err error) {
-	var templatePath string
-	switch types {
-	case LocalModelUrl:
-		// 获取本地模板文件的路径
-		templatePath, err = GetModelTemplatePath()
-		if err != nil {
-			return err
-		}
-	case LocalRepoUrl:
-		templatePath, err = GetRepoTemplatePath()
-		if err != nil {
-			return err
-		}
-	default:
-		return errors.New("模板类型不存在")
-	}
-	// 通过本地文件保存模板
-	if err := SaveTemplateByLocal(templatePath, filePath, data); err != nil {
-		return err
-	}
-	return nil
-}
-
-// CreateRepoFile 创建repo模板文件
-func CreateRepoFile(filePath string, data map[string]any) (err error) {
-	// 获取repo模板文件路径
-	templatePath, err := GetRepoTemplatePath()
-	if err != nil {
-		return err
-	}
-	// 创建模板文件
-	if err := CreateTemplateFile(templatePath, filePath, data); err != nil {
-		return err
-	}
-	return nil
-}
-
 // GetRepoTemplatePath 获取本地repo.tpl模板文件的路径
 func GetRepoTemplatePath() (string, error) {
-	dir, err := GenerateTemplateDir()
+	dir, err := GetTemplateDir()
 	if err != nil {
 		return "", err
 	}
@@ -99,36 +49,12 @@ func GetRepoTemplatePath() (string, error) {
 
 // GetModelTemplatePath 获取本地model.tpl模板文件的路径
 func GetModelTemplatePath() (string, error) {
-	dir, err := GenerateTemplateDir()
+	dir, err := GetTemplateDir()
 	if err != nil {
 		return "", err
 	}
 	result := filepath.Join(dir, LocalModelUrl)
 	return result, nil
-}
-
-// SaveTemplateByLocal 渲染数据到指定的模板，并保存
-// templatePath: 模板路径
-// filePath: 保存的路径
-// data: 数据源
-func SaveTemplateByLocal(templatePath string, filePath string, data map[string]any) error {
-	templateFile, err := template.ParseFiles(templatePath)
-	if err != nil {
-		return err
-	}
-
-	// 渲染数据到模板
-	buf := new(bytes.Buffer)
-	err = templateFile.Execute(buf, data)
-	if err != nil {
-		return err
-	}
-
-	// 创建文件
-	if err = createFile(filePath, buf.Bytes()); err != nil {
-		return err
-	}
-	return nil
 }
 
 // CreateTemplateFile 创建模板文件

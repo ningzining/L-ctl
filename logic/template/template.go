@@ -52,7 +52,7 @@ func (t *Template) Init() error {
 
 // Update 更新模板文件
 func (t *Template) Update() error {
-	templateDir, err := templateutil.GenerateTemplateDir()
+	templateDir, err := templateutil.GetTemplateDir()
 	if err != nil {
 		return err
 	}
