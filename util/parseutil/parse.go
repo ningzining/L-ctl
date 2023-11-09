@@ -3,8 +3,8 @@ package parseutil
 import (
 	"errors"
 	"fmt"
-	"github.com/ningzining/L-ctl/sql/model"
 	"github.com/ningzining/L-ctl/util/caseutil"
+	"github.com/ningzining/L-ctl/util/sqlutil/model"
 	"sort"
 	"strings"
 )

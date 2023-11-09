@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 	"github.com/ningzining/L-ctl/cache"
-	"github.com/ningzining/L-ctl/sql"
+	"github.com/ningzining/L-ctl/util/sqlutil"
 	"testing"
 )
 
@@ -16,7 +16,7 @@ func TestModel_Generate(t *testing.T) {
 }
 
 func TestModel_Auto(t *testing.T) {
-	mysql, err := sql.NewMysql("root:root@tcp(127.0.0.1:3306)", "test")
+	mysql, err := sqlutil.NewMysql("root:root@tcp(127.0.0.1:3306)", "test")
 	if err != nil {
 		return
 	}

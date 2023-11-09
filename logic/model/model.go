@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/go-sql-driver/mysql"
-	"github.com/ningzining/L-ctl/sql"
-	"github.com/ningzining/L-ctl/sql/model"
 	"github.com/ningzining/L-ctl/util/caseutil"
 	"github.com/ningzining/L-ctl/util/parseutil"
 	"github.com/ningzining/L-ctl/util/pathutil"
+	"github.com/ningzining/L-ctl/util/sqlutil"
+	model2 "github.com/ningzining/L-ctl/util/sqlutil/model"
 	"github.com/ningzining/L-ctl/util/templateutil"
 	"gorm.io/gorm"
 	"path/filepath"
@@ -46,13 +46,13 @@ func (m *Model) Generate() error {
 	}
 
 	// 获取mysql系统库的dsn连接
-	db, err := sql.NewMysql(m.Url, dsn.DBName)
+	db, err := sqlutil.NewMysql(m.Url, dsn.DBName)
 	if err != nil {
 		return err
 	}
 
 	// 查询目标数据库中所有的表名
-	tables, err := model.NewTableRepo(db).GetAllTables(dsn.DBName)
+	tables, err := model2.NewTableRepo(db).GetAllTables(dsn.DBName)
 	if err != nil {
 		return err
 	}
@@ -92,10 +92,10 @@ func (m *Model) getGenerateTables(tableArg string, tables []string) []string {
 }
 
 // 获取所有表相关的列信息
-func (m *Model) getTableStruct(db *gorm.DB, dbName string, tables []string) (map[string]*model.Table, error) {
-	tableMap := make(map[string]*model.Table)
+func (m *Model) getTableStruct(db *gorm.DB, dbName string, tables []string) (map[string]*model2.Table, error) {
+	tableMap := make(map[string]*model2.Table)
 	for _, tableName := range tables {
-		table, err := model.NewColumnRepo(db).FindColumns(dbName, tableName)
+		table, err := model2.NewColumnRepo(db).FindColumns(dbName, tableName)
 		if err != nil {
 			return nil, err
 		}
@@ -105,7 +105,7 @@ func (m *Model) getTableStruct(db *gorm.DB, dbName string, tables []string) (map
 }
 
 // 生成目标model文件
-func (m *Model) genTemplate(tables map[string]*model.Table) error {
+func (m *Model) genTemplate(tables map[string]*model2.Table) error {
 	for _, item := range tables {
 		table, err := parseutil.ConvertTable(item)
 		if err != nil {

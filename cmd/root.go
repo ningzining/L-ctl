@@ -7,7 +7,7 @@ import (
 	"github.com/ningzining/L-ctl/cmd/repo"
 	"github.com/ningzining/L-ctl/cmd/swag"
 	"github.com/ningzining/L-ctl/cmd/template"
-	"github.com/ningzining/L-ctl/logic/version"
+	"github.com/ningzining/L-ctl/config"
 	"os"
 	"runtime"
 
@@ -29,7 +29,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Version = fmt.Sprintf("%s %s/%s", version.BuildVersion, runtime.GOOS, runtime.GOARCH)
+	rootCmd.Version = fmt.Sprintf("%s %s/%s", config.BuildVersion, runtime.GOOS, runtime.GOARCH)
 	rootCmd.AddCommand(template.CmdTemplate)
 	rootCmd.AddCommand(repo.Cmd)
 	rootCmd.AddCommand(model.Cmd)

@@ -1,4 +1,4 @@
-package sql
+package sqlutil
 
 import (
 	"gorm.io/driver/mysql"
