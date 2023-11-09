@@ -1,4 +1,4 @@
-package logic
+package template
 
 import (
 	"errors"
@@ -10,7 +10,8 @@ import (
 	"path/filepath"
 )
 
-type Template struct{}
+type Template struct {
+}
 
 func NewTemplate() *Template {
 	return &Template{}
@@ -19,7 +20,7 @@ func NewTemplate() *Template {
 // Init 初始化模板文件
 func (t *Template) Init() error {
 	// 获取模板文件所存在的目录
-	templateDir, err := templateutil.GenerateTemplateDir()
+	templateDir, err := templateutil.GetTemplateDir()
 	if err != nil {
 		return err
 	}
@@ -29,8 +30,7 @@ func (t *Template) Init() error {
 	}
 	if !exist {
 		// 不存在目录则创建目标目录
-		err := pathutil.MkdirIfNotExist(templateDir)
-		if err != nil {
+		if err := pathutil.MkdirIfNotExist(templateDir); err != nil {
 			return err
 		}
 	}
@@ -63,6 +63,6 @@ func (t *Template) Update() error {
 		return err
 	}
 	fmt.Printf("%s\n", string(bytes))
-	color.Green("模板库更新成功")
+	color.Green("模板库更新成功: %s\n", templateDir)
 	return nil
 }

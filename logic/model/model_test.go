@@ -1,4 +1,4 @@
-package logic
+package model
 
 import (
 	"fmt"
@@ -8,12 +8,7 @@ import (
 )
 
 func TestModel_Generate(t *testing.T) {
-	arg := ModelGenerateArg{
-		Url:    "root:root@tcp(127.0.0.1:3306)/test",
-		Dir:    "./cache",
-		Tables: "",
-	}
-	err := NewModel().Generate(arg)
+	err := NewModel("root:root@tcp(127.0.0.1:3306)/test", "./cache", "", "true", "").Generate()
 	if err != nil {
 		fmt.Printf("%s\n", err)
 		return
@@ -21,9 +16,9 @@ func TestModel_Generate(t *testing.T) {
 }
 
 func TestModel_Auto(t *testing.T) {
-	mysql, err := sql.NewMysql("root:root@tcp(127.0.0.1:3306)/test")
+	mysql, err := sql.NewMysql("root:root@tcp(127.0.0.1:3306)", "test")
 	if err != nil {
 		return
 	}
-	mysql.AutoMigrate(&cache.Sysusers{})
+	mysql.AutoMigrate(cache.Test{})
 }

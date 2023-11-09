@@ -11,7 +11,7 @@ var (
 	projectId string
 )
 
-var Cmd = &cobra.Command{
+var CmdSwag = &cobra.Command{
 	Use:   "swag",
 	Short: "导入swagger文档到指定apifox",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -19,17 +19,16 @@ var Cmd = &cobra.Command{
 			color.Red("swagger导入apifox失败: %s\n", err.Error())
 			return
 		}
-		color.Green("swagger导入apifox成功\n")
 	},
 }
 
 func init() {
-	Cmd.Flags().StringVarP(&file, "file", "f", "", "指定swagger.json文件的位置")
-	Cmd.Flags().StringVarP(&projectId, "projectId", "p", "", "指定apifox当中的项目ID")
-	if err := Cmd.MarkFlagRequired("file"); err != nil {
+	CmdSwag.Flags().StringVarP(&file, "file", "f", "", "指定swagger.json文件的位置")
+	CmdSwag.Flags().StringVarP(&projectId, "projectId", "p", "", "指定apifox当中的项目ID")
+	if err := CmdSwag.MarkFlagRequired("file"); err != nil {
 		return
 	}
-	if err := Cmd.MarkFlagRequired("projectId"); err != nil {
+	if err := CmdSwag.MarkFlagRequired("projectId"); err != nil {
 		return
 	}
 }

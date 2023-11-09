@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/config"
 	"io"
 	"net/http"
@@ -55,7 +56,7 @@ func (s *Swag) Upload() error {
 	if !apiFoxRes.Success {
 		return errors.New(fmt.Sprintf("apifox上传失败: %s\n", apiFoxRes.Data))
 	}
-
+	color.Green("swagger导入apifox成功\n")
 	return nil
 }
 

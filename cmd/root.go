@@ -30,8 +30,8 @@ func Execute() {
 
 func init() {
 	rootCmd.Version = fmt.Sprintf("%s %s/%s", version.BuildVersion, runtime.GOOS, runtime.GOARCH)
-	rootCmd.AddCommand(template.Cmd)
+	rootCmd.AddCommand(template.CmdTemplate)
 	rootCmd.AddCommand(repo.Cmd)
 	rootCmd.AddCommand(model.Cmd)
-	rootCmd.AddCommand(swag.Cmd)
+	rootCmd.AddCommand(swag.CmdSwag)
 }

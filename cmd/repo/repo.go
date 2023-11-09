@@ -1,7 +1,8 @@
 package repo
 
 import (
-	"github.com/ningzining/L-ctl/logic"
+	"github.com/fatih/color"
+	"github.com/ningzining/L-ctl/logic/repo"
 	"github.com/spf13/cobra"
 )
 
@@ -13,14 +14,11 @@ var overwrite string
 var Cmd = &cobra.Command{
 	Use:   "repo",
 	Short: "生成仓储层的repo文件",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		arg := logic.RepoGenerateArg{
-			Dir:       dir,
-			Table:     table,
-			Overwrite: overwrite,
-			Style:     style,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := repo.NewRepo(dir, table, style, overwrite).Generate(); err != nil {
+			color.Red("repo文件生成失败, %s\n", err.Error())
+			return
 		}
-		return logic.NewRepo().Generate(arg)
 	},
 }
 

@@ -3,7 +3,6 @@ package templateutil
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"go/format"
 	"os"
 	"path"
@@ -18,7 +17,6 @@ const (
 	DefaultTemplateDir = ".L-ctl"
 	Template           = "template"
 	GoFileSuffix       = ".go"
-	Config             = ".config"
 )
 
 // GenerateTemplateDir 生成默认模板文件的路径
@@ -31,16 +29,17 @@ func GenerateTemplateDir() (string, error) {
 	return resultDir, nil
 }
 
-// GenerateConfigFile 生成默认配置文件的路径
-func GenerateConfigFile() (string, error) {
+// GetTemplateDir 获取默认模板文件的路径
+func GetTemplateDir() (string, error) {
 	dirPrefix, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Config)
+	resultDir := filepath.Join(dirPrefix, DefaultTemplateDir, Template)
 	return resultDir, nil
 }
 
+// GetConfigFilePath 获取默认配置文件的路径
 func GetConfigFilePath() (string, error) {
 	dirPrefix, err := os.UserHomeDir()
 	if err != nil {
@@ -69,6 +68,20 @@ func Create(filePath string, data map[string]any, types string) (err error) {
 	}
 	// 通过本地文件保存模板
 	if err := SaveTemplateByLocal(templatePath, filePath, data); err != nil {
+		return err
+	}
+	return nil
+}
+
+// CreateRepoFile 创建repo模板文件
+func CreateRepoFile(filePath string, data map[string]any) (err error) {
+	// 获取repo模板文件路径
+	templatePath, err := GetRepoTemplatePath()
+	if err != nil {
+		return err
+	}
+	// 创建模板文件
+	if err := CreateTemplateFile(templatePath, filePath, data); err != nil {
 		return err
 	}
 	return nil
@@ -118,6 +131,24 @@ func SaveTemplateByLocal(templatePath string, filePath string, data map[string]a
 	return nil
 }
 
+// CreateTemplateFile 创建模板文件
+func CreateTemplateFile(templatePath string, filePath string, data map[string]any) error {
+	templateFile, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return err
+	}
+
+	// 渲染数据到模板
+	buf := new(bytes.Buffer)
+	err = templateFile.Execute(buf, data)
+	if err != nil {
+		return err
+	}
+
+	// 创建文件
+	return createFile(filePath, buf.Bytes())
+}
+
 // 创建文件
 // filePath: 文件路径
 // dadaBytes: 字节数组
@@ -135,10 +166,8 @@ func createFile(filePath string, dataByes []byte) error {
 	} else {
 		buf.Write(dataByes)
 	}
-	if err := os.WriteFile(filePath, buf.Bytes(), os.ModePerm); err != nil {
-		return errors.New(fmt.Sprintf("文件创建失败: %s", err))
-	}
-	return nil
+
+	return os.WriteFile(filePath, buf.Bytes(), os.ModePerm)
 }
 
 // MergeMap 合并所有的map集合
