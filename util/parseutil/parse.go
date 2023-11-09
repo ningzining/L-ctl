@@ -43,9 +43,9 @@ var commonMysqlDataTypeMapString = map[string]string{
 	"real":      "float64",
 	"bit":       "byte",
 	// date & time
-	"date":      "*time.Time",
-	"datetime":  "*time.Time",
-	"timestamp": "*time.Time",
+	"date":      "time.Time",
+	"datetime":  "time.Time",
+	"timestamp": "time.Time",
 	"time":      "string",
 	"year":      "int64",
 	// string
