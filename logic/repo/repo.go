@@ -5,7 +5,6 @@ import (
 	"github.com/ningzining/L-ctl/util/caseutil"
 	"github.com/ningzining/L-ctl/util/pathutil"
 	"github.com/ningzining/L-ctl/util/templateutil"
-	"path/filepath"
 )
 
 type Repo struct {
@@ -32,8 +31,8 @@ func (r *Repo) Generate() error {
 		return err
 	}
 	// 获取数据并生成模板文件
-	data := r.getRepoTemplateData(dirAbs, r.Table)
-	if err := r.createRepoFile(fileAbs, data); err != nil {
+	data := getRepoTemplateData(dirAbs, r.Table)
+	if err := createRepoFile(fileAbs, data); err != nil {
 		return err
 	}
 
@@ -41,20 +40,16 @@ func (r *Repo) Generate() error {
 	return nil
 }
 
-func (r *Repo) getRepoTemplateData(dirAbs, tableName string) map[string]any {
-	pkgMap := map[string]any{
-		"pkg": filepath.Base(dirAbs),
-	}
+func getRepoTemplateData(dirAbs, tableName string) map[string]any {
 	dataMap := map[string]any{
 		"name":      caseutil.UpperCamelCase(tableName),
 		"tableName": tableName,
 	}
 
-	data := templateutil.MergeMap(pkgMap, dataMap)
-	return data
+	return templateutil.MergeMap(templateutil.GetPkg(dirAbs), dataMap)
 }
 
-func (r *Repo) createRepoFile(filePath string, data map[string]any) (err error) {
+func createRepoFile(filePath string, data map[string]any) (err error) {
 	// 获取repo模板文件路径
 	templatePath, err := templateutil.GetRepoTemplatePath()
 	if err != nil {

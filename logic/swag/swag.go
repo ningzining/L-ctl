@@ -36,7 +36,7 @@ func (s *Swag) Upload() error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s%s%s", urlPrefix, s.ProjectId, urlSuffix)
+
 	ctlConfig, err := config.GetCtlConfig()
 	if err != nil {
 		return err
@@ -48,7 +48,8 @@ func (s *Swag) Upload() error {
 		ApiOverwriteMode:    "methodAndPath",
 		SchemaOverwriteMode: "name",
 	}
-	apiFoxRes, err := s.post(url, apiFoxReq, ctlConfig.Token)
+	url := fmt.Sprintf("%s%s%s", urlPrefix, s.ProjectId, urlSuffix)
+	apiFoxRes, err := post(url, apiFoxReq, ctlConfig.Token)
 	if err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ type ApiFoxRes struct {
 }
 
 // Post 根据url获取http的字节流返回
-func (s *Swag) post(url string, req ApiFoxReq, token string) (*ApiFoxRes, error) {
+func post(url string, req ApiFoxReq, token string) (*ApiFoxRes, error) {
 	reqData, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err

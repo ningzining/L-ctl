@@ -18,6 +18,11 @@ const (
 	GoFileSuffix       = ".go"
 )
 
+const (
+	decimalImport = "decimal.Decimal"
+	timeImport    = "time.Time"
+)
+
 // GetTemplateDir 获取默认模板文件的路径
 func GetTemplateDir() (string, error) {
 	dirPrefix, err := os.UserHomeDir()
@@ -105,4 +110,23 @@ func MergeMap(source ...map[string]any) map[string]any {
 		}
 	}
 	return res
+}
+
+func GetPkg(dirAbs string) map[string]any {
+	return map[string]any{
+		"pkg": filepath.Base(dirAbs),
+	}
+}
+
+func GetImports(importsField []string) map[string]any {
+	importsMap := make(map[string]any)
+	for _, field := range importsField {
+		if field == timeImport {
+			importsMap["time"] = true
+		}
+		if field == decimalImport {
+			importsMap["decimal"] = true
+		}
+	}
+	return importsMap
 }
