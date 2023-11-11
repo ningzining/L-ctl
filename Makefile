@@ -1,15 +1,18 @@
 TARGET_NAME = L-ctl
 
-.PHONY: build
-build:
-	@go build -o L-ctl.exe main.go
+.PHONY: build-linux
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o $(TARGET_NAME) .
 
-.PHONY: build.linux
-build.linux:
-	@SET GOOS=linux
-	@SET GOARCH=amd64
-	@go build -o L-ctl main.go
+.PHONY: build-darwin
+build-darwin:
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o $(TARGET_NAME) .
 
-.PHONY: build.clean
-build.clean:
+.PHONY: build-windows
+build-windows:
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o $(TARGET_NAME).exe .
+
+.PHONY: build-clean
+build-clean:
 	@rm -f $(CURDIR)/$(TARGET_NAME)
+	@rm -f $(CURDIR)/$(TARGET_NAME).exe
