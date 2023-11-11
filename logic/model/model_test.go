@@ -20,5 +20,5 @@ func TestModel_Auto(t *testing.T) {
 	if err != nil {
 		return
 	}
-	mysql.AutoMigrate(cache.Test{})
+	mysql.AutoMigrate(cache.Sysusers{})
 }
