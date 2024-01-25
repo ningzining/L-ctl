@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	TemplateGitUrl     = "https://github.com/ningzining/L-ctl-template.git"
 	LocalModelUrl      = "model/model.tpl"
 	LocalRepoUrl       = "repo/repo.tpl"
 	DefaultTemplateDir = ".L-ctl"

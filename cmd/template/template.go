@@ -1,6 +1,7 @@
 package template
 
 import (
+	"github.com/fatih/color"
 	"github.com/ningzining/L-ctl/logic/template"
 	"github.com/spf13/cobra"
 )
@@ -16,7 +17,11 @@ var initCmd = &cobra.Command{
 	Short: "初始化模板库",
 	Long:  `初始化模板库`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return template.NewTemplate().Init()
+		if err := template.NewTemplate().Init(); err != nil {
+			color.Red("模板初始化失败,%s", err.Error())
+			return err
+		}
+		return nil
 	},
 }
 
