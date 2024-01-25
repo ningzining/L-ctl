@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/config"
-	"github.com/ningzining/L-ctl/logic/swag/apifox"
+	"github.com/ningzining/lctl/config"
+	"github.com/ningzining/lctl/logic/swag/apifox"
 )
 
 func (s *Swag) Upload() error {

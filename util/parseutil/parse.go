@@ -3,10 +3,11 @@ package parseutil
 import (
 	"errors"
 	"fmt"
-	"github.com/ningzining/L-ctl/util/caseutil"
-	"github.com/ningzining/L-ctl/util/sqlutil/model"
 	"sort"
 	"strings"
+
+	"github.com/ningzining/lctl/util/caseutil"
+	"github.com/ningzining/lctl/util/sqlutil/model"
 )
 
 var commonMysqlDataTypeMapString = map[string]string{

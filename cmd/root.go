@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/cmd/model"
-	"github.com/ningzining/L-ctl/cmd/repo"
-	"github.com/ningzining/L-ctl/cmd/swag"
-	"github.com/ningzining/L-ctl/cmd/template"
-	"github.com/ningzining/L-ctl/config"
 	"os"
 	"runtime"
+
+	"github.com/fatih/color"
+	"github.com/ningzining/lctl/cmd/model"
+	"github.com/ningzining/lctl/cmd/repo"
+	"github.com/ningzining/lctl/cmd/swag"
+	"github.com/ningzining/lctl/cmd/template"
+	"github.com/ningzining/lctl/config"
 
 	"github.com/spf13/cobra"
 )

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/ningzining/L-ctl/logic/model"
+	"github.com/ningzining/lctl/logic/model"
 	"github.com/spf13/cobra"
 )
 

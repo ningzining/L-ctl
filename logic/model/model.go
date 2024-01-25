@@ -2,16 +2,17 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/go-sql-driver/mysql"
-	"github.com/ningzining/L-ctl/util/caseutil"
-	"github.com/ningzining/L-ctl/util/parseutil"
-	"github.com/ningzining/L-ctl/util/pathutil"
-	"github.com/ningzining/L-ctl/util/sqlutil"
-	"github.com/ningzining/L-ctl/util/sqlutil/model"
-	"github.com/ningzining/L-ctl/util/templateutil"
+	"github.com/ningzining/lctl/util/caseutil"
+	"github.com/ningzining/lctl/util/parseutil"
+	"github.com/ningzining/lctl/util/pathutil"
+	"github.com/ningzining/lctl/util/sqlutil"
+	"github.com/ningzining/lctl/util/sqlutil/model"
+	"github.com/ningzining/lctl/util/templateutil"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type Model struct {

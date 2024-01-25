@@ -2,7 +2,7 @@ package repo
 
 import (
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/logic/repo"
+	"github.com/ningzining/lctl/logic/repo"
 	"github.com/spf13/cobra"
 )
 

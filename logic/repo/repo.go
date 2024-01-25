@@ -2,9 +2,9 @@ package repo
 
 import (
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/util/caseutil"
-	"github.com/ningzining/L-ctl/util/pathutil"
-	"github.com/ningzining/L-ctl/util/templateutil"
+	"github.com/ningzining/lctl/util/caseutil"
+	"github.com/ningzining/lctl/util/pathutil"
+	"github.com/ningzining/lctl/util/templateutil"
 )
 
 type Repo struct {

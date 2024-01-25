@@ -2,7 +2,7 @@ package swag
 
 import (
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/logic/swag"
+	"github.com/ningzining/lctl/logic/swag"
 	"github.com/spf13/cobra"
 )
 

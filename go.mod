@@ -1,4 +1,4 @@
-module github.com/ningzining/L-ctl
+module github.com/ningzining/lctl
 
 go 1.20
 

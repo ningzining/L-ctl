@@ -2,7 +2,7 @@ package template
 
 import (
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/logic/template"
+	"github.com/ningzining/lctl/logic/template"
 	"github.com/spf13/cobra"
 )
 

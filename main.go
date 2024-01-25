@@ -1,6 +1,6 @@
 package main
 
-import "github.com/ningzining/L-ctl/cmd"
+import "github.com/ningzining/lctl/cmd"
 
 func main() {
 	cmd.Execute()

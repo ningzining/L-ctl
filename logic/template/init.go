@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/util/gitutil"
-	"github.com/ningzining/L-ctl/util/pathutil"
-	"github.com/ningzining/L-ctl/util/templateutil"
+	"github.com/ningzining/lctl/util/gitutil"
+	"github.com/ningzining/lctl/util/pathutil"
+	"github.com/ningzining/lctl/util/templateutil"
 )
 
 // Init 初始化模板文件

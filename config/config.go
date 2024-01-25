@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ningzining/L-ctl/util/templateutil"
+	"github.com/ningzining/lctl/util/templateutil"
 	"github.com/spf13/viper"
 )
 

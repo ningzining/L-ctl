@@ -3,9 +3,10 @@ package pathutil
 import (
 	"errors"
 	"fmt"
-	"github.com/ningzining/L-ctl/util/caseutil"
 	"os"
 	"path/filepath"
+
+	"github.com/ningzining/lctl/util/caseutil"
 )
 
 const (

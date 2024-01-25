@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/util/gitutil"
-	"github.com/ningzining/L-ctl/util/templateutil"
+	"github.com/ningzining/lctl/util/gitutil"
+	"github.com/ningzining/lctl/util/templateutil"
 )
 
 // Update 更新模板文件
