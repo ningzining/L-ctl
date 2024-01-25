@@ -20,7 +20,11 @@ func GetCtlConfig() (*CtlConfig, error) {
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
 	}
+
 	var c CtlConfig
-	viper.Unmarshal(&c)
+	if err := viper.Unmarshal(&c); err != nil {
+		return nil, err
+	}
+
 	return &c, nil
 }

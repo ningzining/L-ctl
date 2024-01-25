@@ -1,21 +1,14 @@
 package swag
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/ningzining/L-ctl/config"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
-)
 
-const (
-	urlPrefix = "https://api.apifox.cn/api/v1/projects/"
-	urlSuffix = "/import-data"
+	"github.com/fatih/color"
+	"github.com/ningzining/L-ctl/config"
+	"github.com/ningzining/L-ctl/logic/swag/apifox"
 )
 
 type Swag struct {
@@ -42,63 +35,20 @@ func (s *Swag) Upload() error {
 		return err
 	}
 
-	apiFoxReq := ApiFoxReq{
+	apiFoxReq := apifox.ImportDataReq{
 		ImportFormat:        "openapi",
 		Data:                string(file),
 		ApiOverwriteMode:    "methodAndPath",
 		SchemaOverwriteMode: "name",
 	}
-	url := fmt.Sprintf("%s%s%s", urlPrefix, s.ProjectId, urlSuffix)
-	apiFoxRes, err := post(url, apiFoxReq, ctlConfig.Token)
+	apiFoxRes, err := apifox.NewClient(ctlConfig.Token).ImportData(s.ProjectId, apiFoxReq)
 	if err != nil {
 		return err
 	}
 
 	if !apiFoxRes.Success {
-		return errors.New(fmt.Sprintf("apifox上传失败: %s\n", apiFoxRes.Data))
+		return errors.New(fmt.Sprintf("%v", apiFoxRes.Data))
 	}
-	color.Green("swagger导入apifox成功\n")
+	color.Green("swagger文件导入apifox成功")
 	return nil
-}
-
-type ApiFoxReq struct {
-	ImportFormat        string `json:"importFormat"`
-	Data                string `json:"data"`
-	ApiOverwriteMode    string `json:"apiOverwriteMode"`
-	SchemaOverwriteMode string `json:"schemaOverwriteMode"`
-}
-
-type ApiFoxRes struct {
-	Data    interface{} `json:"data"`
-	Success bool        `json:"success"`
-}
-
-// Post 根据url获取http的字节流返回
-func post(url string, req ApiFoxReq, token string) (*ApiFoxRes, error) {
-	reqData, err := json.Marshal(&req)
-	if err != nil {
-		return nil, err
-	}
-	reqBody := strings.NewReader(string(reqData))
-	client := http.Client{}
-	request, err := http.NewRequest("POST", url, reqBody)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("X-Apifox-Version", "2022-11-16")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	res, err := client.Do(request)
-	defer res.Body.Close()
-	apiFoxResBytes, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var apiFoxRes ApiFoxRes
-	if err := json.Unmarshal(apiFoxResBytes, &apiFoxRes); err != nil {
-		return nil, err
-	}
-
-	return &apiFoxRes, nil
 }
